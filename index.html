@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0c315e" />
+<title>太陽シルバーサービス｜業務アプリポータル</title>
+<style>
+  :root{
+    --navy:#0c315e; --navy-deep:#08213f; --blue:#2563eb; --blue-deep:#1d4ed8;
+    --line:#dbe2ea; --muted:#6b7c8f; --ink:#0f1f33; --bg:#f3f6fa;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);
+    font-family:"Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif;}
+  button,input,select{font:inherit}
+  .hidden{display:none !important}
+
+  /* ---------- ログイン画面 ---------- */
+  #login-screen{min-height:100vh;display:grid;place-items:center;padding:24px;
+    background:radial-gradient(circle at 78% 10%, #e3edfb, transparent 40%), var(--bg);}
+  .login-card{width:min(440px,100%);padding:34px 30px;background:#fff;border:1px solid var(--line);
+    border-radius:16px;box-shadow:0 18px 48px rgba(12,49,94,.10);}
+  .brand-row{display:flex;align-items:center;gap:12px;}
+  .brand-mark{width:42px;height:42px;border-radius:11px;background:var(--navy);color:#fff;
+    display:grid;place-items:center;font-weight:900;font-size:19px;flex:none;}
+  .brand-row strong{display:block;color:var(--navy);font-size:17px;letter-spacing:-.02em;}
+  .brand-row span{display:block;margin-top:2px;color:var(--muted);font-size:11px;}
+  .login-rule{height:1px;margin:22px 0;background:var(--line);}
+  .login-card h1{margin:0 0 6px;color:var(--navy);font-size:21px;}
+  .login-card p.lead{margin:0 0 20px;color:var(--muted);font-size:12px;line-height:1.6;}
+  .field{display:grid;gap:6px;margin-bottom:14px;color:#54677c;font-size:11px;font-weight:800;}
+  .field select,.field input{height:44px;padding:0 12px;border:1px solid #c7d2dd;border-radius:9px;
+    outline:0;color:var(--ink);background:#fff;font-size:13px;}
+  .field select:focus,.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.14);}
+  .login-btn{width:100%;height:46px;margin-top:4px;border:0;border-radius:9px;background:var(--blue);
+    color:#fff;font-size:14px;font-weight:800;cursor:pointer;transition:.15s;}
+  .login-btn:hover{background:var(--blue-deep);}
+  .form-error{margin-top:2px;margin-bottom:12px;padding:9px 11px;border:1px solid #f0bcbc;
+    border-radius:7px;color:#a23a3a;background:#fff3f3;font-size:11px;}
+  .login-note{margin-top:18px;padding:11px 12px;border-radius:8px;display:flex;gap:8px;
+    color:var(--muted);background:#f1f5f9;font-size:10.5px;line-height:1.6;}
+
+  /* ---------- ハブ画面 ---------- */
+  #hub-screen{min-height:100vh;}
+  .topbar{height:70px;padding:0 26px;background:#fff;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:16px;}
+  .topbar .brand-row{flex:none;}
+  .office-pill{margin-left:8px;padding:6px 12px;border-radius:999px;background:#eef2f8;
+    color:var(--navy);font-size:12px;font-weight:800;}
+  .spacer{flex:1;}
+  .logout-btn{height:38px;padding:0 14px;border:1px solid var(--line);border-radius:8px;
+    background:#fff;color:#516276;font-size:11.5px;font-weight:800;cursor:pointer;}
+  .logout-btn:hover{border-color:#aebdcd;color:var(--navy);}
+  .hub-main{max-width:1180px;margin:0 auto;padding:36px 24px 60px;}
+  .hub-heading h2{margin:0;color:var(--navy);font-size:23px;letter-spacing:-.02em;}
+  .hub-heading p{margin:8px 0 26px;color:var(--muted);font-size:12px;}
+  .tile-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+  .tile{position:relative;display:flex;flex-direction:column;gap:10px;padding:22px 20px;
+    border:1px solid var(--line);border-radius:14px;background:#fff;
+    box-shadow:0 4px 14px rgba(12,49,94,.05);transition:.15s;}
+  .tile:hover{box-shadow:0 10px 24px rgba(12,49,94,.12);border-color:#c3d3e6;}
+  .tile.disabled{opacity:.62;}
+  .tile-icon{width:46px;height:46px;border-radius:11px;display:grid;place-items:center;
+    color:#fff;font-size:22px;}
+  .tile h3{margin:2px 0 0;color:var(--navy);font-size:15px;}
+  .tile p.tile-desc{margin:0;color:var(--muted);font-size:11.5px;line-height:1.55;}
+  .tile-badge{position:absolute;top:16px;right:16px;padding:3px 9px;border-radius:999px;
+    font-size:9.5px;font-weight:800;}
+  .badge-ready{background:#e3f3ec;color:#0f7a4d;}
+  .badge-soon{background:#f1f0f7;color:#6c5ea3;}
+  .c-blue{background:#2563eb} .c-teal{background:#0d9488} .c-purple{background:#7c3aed}
+  .c-amber{background:#d97706} .c-indigo{background:#4f46e5} .c-fuchsia{background:#c026d3}
+
+  .tile-usage{margin-top:2px;border-top:1px solid var(--line);padding-top:10px;}
+  .tile-usage summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;
+    color:var(--blue);font-size:11px;font-weight:800;}
+  .tile-usage summary::-webkit-details-marker{display:none;}
+  .tile-usage summary::before{content:'▸';font-size:10px;transition:transform .15s;}
+  .tile-usage[open] summary::before{transform:rotate(90deg);}
+  .tile-usage[open] summary{color:var(--blue-deep);}
+  .tile-usage ul{margin:9px 0 0;padding-left:17px;color:#55697d;font-size:11px;line-height:1.75;}
+  .tile-usage ul li{margin-bottom:2px;}
+  .tile-footer{margin-top:auto;padding-top:10px;}
+  .tile-open{display:inline-flex;align-items:center;gap:6px;color:#fff;background:var(--blue);
+    border-radius:8px;padding:9px 13px;font-size:12px;font-weight:800;text-decoration:none;
+    width:100%;justify-content:center;}
+  .tile-open:hover{background:var(--blue-deep);}
+  .tile-open.is-disabled{background:#e4e9ef;color:#93a3b4;pointer-events:none;}
+
+  @media (max-width:900px){ .tile-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+  @media (max-width:620px){
+    .tile-grid{grid-template-columns:1fr;}
+    .topbar{padding:0 14px;} .hub-main{padding:26px 14px 44px;}
+    .office-pill{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== ログイン画面 ===================== -->
+<main id="login-screen">
+  <section class="login-card">
+    <div class="brand-row">
+      <div class="brand-mark">太</div>
+      <div><strong>太陽シルバーサービス㈱</strong><span>業務アプリポータル</span></div>
+    </div>
+    <div class="login-rule"></div>
+    <h1>ログイン</h1>
+    <p class="lead">営業所を選び、共通パスワードを入力してください。一度ログインすると、この端末では次回から自動的にアイコン画面が開きます。</p>
+    <form id="login-form">
+      <label class="field">営業所
+        <select id="office-select"></select>
+      </label>
+      <label class="field">共通パスワード
+        <input id="password-input" type="password" autocomplete="current-password" placeholder="営業所で決めた共通パスワード" />
+      </label>
+      <div id="login-error" class="form-error hidden"></div>
+      <button type="submit" class="login-btn">ログイン</button>
+    </form>
+    <div class="login-note">ℹ️ この端末で初めて入力したパスワードが、以後この端末での合言葉として保存されます。営業所内で決めた共通パスワードを入力してください。</div>
+  </section>
+</main>
+
+<!-- ===================== ハブ画面 ===================== -->
+<div id="hub-screen" class="hidden">
+  <header class="topbar">
+    <div class="brand-row">
+      <div class="brand-mark">太</div>
+      <div><strong>業務アプリポータル</strong><span>太陽シルバーサービス㈱</span></div>
+    </div>
+    <span id="office-pill" class="office-pill"></span>
+    <div class="spacer"></div>
+    <button class="logout-btn" id="logout-btn">営業所を変更 / ログアウト</button>
+  </header>
+  <main class="hub-main">
+    <div class="hub-heading">
+      <h2>アプリを選択してください</h2>
+      <p>アイコンをクリックすると、各業務アプリが新しいタブで開きます。</p>
+    </div>
+    <div class="tile-grid" id="tile-grid"></div>
+  </main>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var SESSION_KEY = 'taiyo_portal_session';
+
+  var OFFICES = [
+    '小倉営業所','小倉南営業所','八幡西営業所','八幡東営業所','行橋営業所','田川営業所',
+    '飯塚営業所','福岡南営業所','福岡西営業所','福岡東営業所','久留米営業所','大牟田営業所',
+    '佐賀営業所','長崎営業所','大村営業所','壱岐営業所','熊本営業所','熊本北営業所','大分営業所'
+  ];
+
+  var APPS = [
+    { name:'見積・提案書作成', desc:'御見積書・価格改定・比較表の作成', icon:'📄', color:'c-blue',
+      url:'https://akamar08taiyo-bot.github.io/taiyo-mitsumori/', ready:true,
+      usage:[
+        '営業所を選ぶと発行元の住所・電話番号が自動で入ります',
+        '商品を検索して数量を入れると金額が自動計算されます',
+        '「印刷」からA4の御見積書・価格改定書をそのまま出力できます',
+        '過去の見積を複製すると次回の入力が楽になります'
+      ] },
+    { name:'福祉用具相談報告書', desc:'写真取り込み・単位数報告書の作成', icon:'📝', color:'c-purple',
+      url:'https://akamar08taiyo-bot.github.io/taiyo-fukushi-report/', ready:true,
+      usage:[
+        '撮影した写真を取り込むと自動でリサイズされます',
+        'AIが商品を認識し、報告書のフォームに反映します',
+        '単位数報告書をPDFでそのまま印刷・提出できます'
+      ] },
+    { name:'販売受注簿・売上伝票発行', desc:'カタログ画像スキャン→受注簿、住宅改修/特定福祉用具の売上伝票', icon:'🧾', color:'c-indigo',
+      url:'https://ai-ui-ux-5-5-1.vercel.app/', ready:true,
+      usage:[
+        'カタログ画面をスクリーンショットし、Ctrl+Vで貼り付けます',
+        '商品名・価格を自動でOCR読み取りして受注簿に転記します',
+        '別タブの「売上伝票発行」で住宅改修・特定福祉用具の伝票も作成できます'
+      ] },
+    { name:'消耗品売上管理', desc:'発注書・見積書の集計と分析', icon:'📦', color:'c-teal',
+      url:'https://akamar08taiyo-bot.github.io/taiyo-uriage-bunseki/', ready:true,
+      usage:[
+        '販売データのCSVを取り込むと施設別・商品別に自動集計します',
+        '施設ごとの購入傾向やランキングをすぐ確認できます',
+        'その場で発注書・見積書も作成できます'
+      ] },
+    { name:'受注残・進捗管理', desc:'レンタル/販売の受注残と営業所別進捗', icon:'📊', color:'c-amber',
+      url:'https://akamar08taiyo-bot.github.io/solar-silver-progress-app/', ready:true,
+      usage:[
+        'レンタル・販売の案件を登録すると受注残に反映されます',
+        '営業所合計や目標に対する進捗が自動集計されます',
+        '月別の推移グラフやランキングも確認できます'
+      ] },
+    { name:'居宅カレンダー', desc:'居宅介護支援事業所への訪問記録・実績分析', icon:'📅', color:'c-fuchsia',
+      url:'https://smart-renta-offline.netlify.app/', ready:true,
+      usage:[
+        '担当者別のExcelを取り込んで利用を開始します',
+        '訪問した日をクリックするだけで記録できます',
+        '「実績分析」タブで年度の訪問件数・訪問率をまとめて確認できます'
+      ] }
+  ];
+
+  var loginScreen = document.getElementById('login-screen');
+  var hubScreen = document.getElementById('hub-screen');
+  var officeSelect = document.getElementById('office-select');
+  var passwordInput = document.getElementById('password-input');
+  var loginForm = document.getElementById('login-form');
+  var loginError = document.getElementById('login-error');
+  var officePill = document.getElementById('office-pill');
+  var tileGrid = document.getElementById('tile-grid');
+  var logoutBtn = document.getElementById('logout-btn');
+
+  OFFICES.forEach(function(name){
+    var opt = document.createElement('option');
+    opt.value = name; opt.textContent = name;
+    if (name === '行橋営業所') opt.selected = true;
+    officeSelect.appendChild(opt);
+  });
+
+  function readSession(){
+    try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch(e){ return null; }
+  }
+  function writeSession(session){
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  }
+  function clearSession(){
+    localStorage.removeItem(SESSION_KEY);
+  }
+
+  function escapeHtml(value){
+    return String(value).replace(/[&<>"']/g, function(ch){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch];
+    });
+  }
+
+  function renderTiles(){
+    tileGrid.innerHTML = '';
+    APPS.forEach(function(app){
+      var usageItems = (app.usage || []).map(function(line){
+        return '<li>' + escapeHtml(line) + '</li>';
+      }).join('');
+      var el = document.createElement('div');
+      el.className = 'tile' + (app.ready ? '' : ' disabled');
+      el.innerHTML =
+        '<span class="tile-badge ' + (app.ready ? 'badge-ready' : 'badge-soon') + '">' +
+          (app.ready ? '利用可能' : '準備中') + '</span>' +
+        '<div class="tile-icon ' + app.color + '">' + app.icon + '</div>' +
+        '<h3>' + escapeHtml(app.name) + '</h3>' +
+        '<p class="tile-desc">' + escapeHtml(app.desc) + '</p>' +
+        (usageItems ? '<details class="tile-usage"><summary>使い方を見る</summary><ul>' + usageItems + '</ul></details>' : '') +
+        '<div class="tile-footer">' +
+          (app.ready
+            ? '<a class="tile-open" href="' + app.url + '" target="_blank" rel="noopener">このアプリを開く ↗</a>'
+            : '<span class="tile-open is-disabled">準備中です</span>') +
+        '</div>';
+      tileGrid.appendChild(el);
+    });
+  }
+
+  function showHub(session){
+    loginScreen.classList.add('hidden');
+    hubScreen.classList.remove('hidden');
+    officePill.textContent = session.office;
+    renderTiles();
+  }
+  function showLogin(){
+    hubScreen.classList.add('hidden');
+    loginScreen.classList.remove('hidden');
+    loginError.classList.add('hidden');
+    passwordInput.value = '';
+  }
+
+  loginForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    var office = officeSelect.value;
+    var password = passwordInput.value.trim();
+    if (!office) { showError('営業所を選択してください。'); return; }
+    if (password.length < 4) { showError('共通パスワードは4文字以上で入力してください。'); return; }
+    var session = { office: office, loginAt: new Date().toISOString() };
+    writeSession(session);
+    showHub(session);
+  });
+
+  function showError(message){
+    loginError.textContent = message;
+    loginError.classList.remove('hidden');
+  }
+
+  logoutBtn.addEventListener('click', function(){
+    if (!window.confirm('ログアウトしますか？この端末に保存された営業所情報を削除します。')) return;
+    clearSession();
+    showLogin();
+  });
+
+  var existing = readSession();
+  if (existing && existing.office) {
+    officeSelect.value = existing.office;
+    showHub(existing);
+  } else {
+    showLogin();
+  }
+})();
+</script>
+</body>
+</html>

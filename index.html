@@ -62,12 +62,15 @@
   .tile:hover{box-shadow:0 10px 24px rgba(12,49,94,.12);border-color:#c3d3e6;}
   .tile.disabled{opacity:.62;}
   .tile.dragging{opacity:.35;}
-  .tile.drag-over{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.16);}
+  .tile.drag-over-before{box-shadow:inset 3px 0 0 0 var(--blue);}
+  .tile.drag-over-after{box-shadow:inset -3px 0 0 0 var(--blue);}
   .tile-drag{position:absolute;top:14px;left:14px;width:26px;height:26px;border-radius:7px;
-    display:grid;place-items:center;color:#a6b4c4;background:transparent;cursor:grab;touch-action:none;}
-  .tile-drag:hover{color:#516276;background:#eef2f8;}
+    display:grid;place-items:center;color:#7c8ea3;background:#eef2f8;cursor:grab;touch-action:none;
+    transition:.15s;}
+  .tile-drag:hover{color:#fff;background:var(--blue);}
   .tile-drag:active{cursor:grabbing;}
   .tile-drag svg{width:15px;height:15px;}
+  .tile-grid.is-dragging .tile:not(.dragging){cursor:pointer;}
   .hub-heading-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;}
   .reset-order-btn{border:0;background:none;padding:0;color:var(--blue);font-size:11.5px;
     font-weight:800;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
@@ -152,7 +155,7 @@
         <h2>アプリを選択してください</h2>
         <button type="button" class="reset-order-btn" id="reset-order-btn">並び順をリセット</button>
       </div>
-      <p>アイコンをクリックすると、各業務アプリが新しいタブで開きます。左上の <span aria-hidden="true">⠿</span> をドラッグすると好きな位置に並べ替えられます（この端末に記憶されます）。</p>
+      <p>アイコンをクリックすると、各業務アプリが新しいタブで開きます。左上の <span aria-hidden="true">⠿</span> をドラッグして、動かしたい枠の左半分・右半分に重ねると、その位置に青い線が出るので目印にして手を離してください。前後どちらへも自由に移動できます（この端末に記憶されます）。</p>
     </div>
     <div class="tile-grid" id="tile-grid"></div>
   </main>
@@ -248,6 +251,14 @@
   var logoutBtn = document.getElementById('logout-btn');
   var resetOrderBtn = document.getElementById('reset-order-btn');
   var dragName = null;
+  var dropTargetName = null;
+  var dropAfter = false;
+
+  function clearDragOverClasses(){
+    Array.prototype.forEach.call(tileGrid.querySelectorAll('.tile'), function(t){
+      t.classList.remove('drag-over-before', 'drag-over-after');
+    });
+  }
 
   function loadOrder(){
     try {
@@ -328,6 +339,7 @@
     if (!tile) { e.preventDefault(); return; }
     dragName = tile.dataset.name;
     tile.classList.add('dragging');
+    tileGrid.classList.add('is-dragging');
     e.dataTransfer.effectAllowed = 'move';
     try { e.dataTransfer.setData('text/plain', dragName); } catch(err){}
   });
@@ -337,34 +349,50 @@
   tileGrid.addEventListener('dragover', function(e){
     if (!dragName) return;
     var tile = e.target.closest('.tile');
-    if (!tile || tile.dataset.name === dragName) return;
+    if (!tile || tile.dataset.name === dragName) {
+      clearDragOverClasses();
+      dropTargetName = null;
+      return;
+    }
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    Array.prototype.forEach.call(tileGrid.querySelectorAll('.tile.drag-over'), function(t){
-      if (t !== tile) t.classList.remove('drag-over');
-    });
-    tile.classList.add('drag-over');
+    var rect = tile.getBoundingClientRect();
+    var after = (e.clientX - rect.left) > rect.width / 2;
+    clearDragOverClasses();
+    tile.classList.add(after ? 'drag-over-after' : 'drag-over-before');
+    dropTargetName = tile.dataset.name;
+    dropAfter = after;
+  });
+  tileGrid.addEventListener('dragleave', function(e){
+    if (!dragName) return;
+    if (!tileGrid.contains(e.relatedTarget)) {
+      clearDragOverClasses();
+      dropTargetName = null;
+    }
   });
   tileGrid.addEventListener('drop', function(e){
-    if (!dragName) return;
+    if (!dragName || !dropTargetName) return;
     e.preventDefault();
-    var tile = e.target.closest('.tile');
-    if (!tile || tile.dataset.name === dragName) return;
-    var targetName = tile.dataset.name;
+    var targetName = dropTargetName;
     var names = orderedApps().map(function(a){ return a.name; });
     var from = names.indexOf(dragName);
     if (from < 0) return;
     names.splice(from, 1);
     var insertAt = names.indexOf(targetName);
+    if (dropAfter) insertAt += 1;
     names.splice(insertAt, 0, dragName);
     saveOrder(names);
     renderTiles();
   });
   tileGrid.addEventListener('dragend', function(){
     Array.prototype.forEach.call(tileGrid.querySelectorAll('.tile'), function(t){
-      t.classList.remove('dragging', 'drag-over');
+      t.classList.remove('dragging');
     });
+    clearDragOverClasses();
+    tileGrid.classList.remove('is-dragging');
     dragName = null;
+    dropTargetName = null;
+    dropAfter = false;
   });
 
   resetOrderBtn.addEventListener('click', function(){

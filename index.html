@@ -16,7 +16,7 @@
   button,input,select{font:inherit}
   .hidden{display:none !important}
 
-  /* ---------- ログイン画面 ---------- */
+  /* ---------- 営業所選択画面（アクセス制限ではない） ---------- */
   #login-screen{min-height:100vh;display:grid;place-items:center;padding:24px;
     background:radial-gradient(circle at 78% 10%, #e3edfb, transparent 40%), var(--bg);}
   .login-card{width:min(440px,100%);padding:34px 30px;background:#fff;border:1px solid var(--line);
@@ -117,7 +117,7 @@
 </head>
 <body>
 
-<!-- ===================== ログイン画面 ===================== -->
+<!-- ===================== 営業所選択画面（アクセス制限ではない） ===================== -->
 <main id="login-screen">
   <section class="login-card">
     <div class="brand-row">
@@ -125,19 +125,16 @@
       <div><strong>太陽シルバーサービス㈱</strong><span>業務アプリポータル</span></div>
     </div>
     <div class="login-rule"></div>
-    <h1>ログイン</h1>
-    <p class="lead">営業所を選び、共通パスワードを入力してください。一度ログインすると、この端末では次回から自動的にアイコン画面が開きます。</p>
+    <h1>営業所の選択</h1>
+    <p class="lead">お使いの営業所を選んでください。選んだ営業所はこの端末に記憶され、次回から自動的にアプリ一覧が開きます。</p>
     <form id="login-form">
       <label class="field">営業所
         <select id="office-select"></select>
       </label>
-      <label class="field">共通パスワード
-        <input id="password-input" type="password" autocomplete="current-password" placeholder="営業所で決めた共通パスワード" />
-      </label>
       <div id="login-error" class="form-error hidden"></div>
-      <button type="submit" class="login-btn">ログイン</button>
+      <button type="submit" class="login-btn">この営業所で開く</button>
     </form>
-    <div class="login-note">ℹ️ この端末で初めて入力したパスワードが、以後この端末での合言葉として保存されます。営業所内で決めた共通パスワードを入力してください。</div>
+    <div class="login-note">⚠️ この画面はアクセス制限ではありません。帳票の発行元表示などに使う営業所を選ぶだけの画面で、本人確認は行っていません。取り扱いに注意が必要な情報は、各アプリ側の管理者にご確認ください。</div>
   </section>
 </main>
 
@@ -150,7 +147,7 @@
     </div>
     <span id="office-pill" class="office-pill"></span>
     <div class="spacer"></div>
-    <button class="logout-btn" id="logout-btn">営業所を変更 / ログアウト</button>
+    <button class="logout-btn" id="logout-btn">営業所を変更</button>
   </header>
   <main class="hub-main">
     <div class="hub-heading">
@@ -254,7 +251,6 @@
   var loginScreen = document.getElementById('login-screen');
   var hubScreen = document.getElementById('hub-screen');
   var officeSelect = document.getElementById('office-select');
-  var passwordInput = document.getElementById('password-input');
   var loginForm = document.getElementById('login-form');
   var loginError = document.getElementById('login-error');
   var officePill = document.getElementById('office-pill');
@@ -421,16 +417,13 @@
     hubScreen.classList.add('hidden');
     loginScreen.classList.remove('hidden');
     loginError.classList.add('hidden');
-    passwordInput.value = '';
   }
 
   loginForm.addEventListener('submit', function(e){
     e.preventDefault();
     var office = officeSelect.value;
-    var password = passwordInput.value.trim();
     if (!office) { showError('営業所を選択してください。'); return; }
-    if (password.length < 4) { showError('共通パスワードは4文字以上で入力してください。'); return; }
-    var session = { office: office, loginAt: new Date().toISOString() };
+    var session = { office: office, selectedAt: new Date().toISOString() };
     writeSession(session);
     showHub(session);
   });
@@ -441,7 +434,7 @@
   }
 
   logoutBtn.addEventListener('click', function(){
-    if (!window.confirm('ログアウトしますか？この端末に保存された営業所情報を削除します。')) return;
+    if (!window.confirm('営業所の選択を解除しますか？この端末に保存された営業所情報を削除します。')) return;
     clearSession();
     showLogin();
   });

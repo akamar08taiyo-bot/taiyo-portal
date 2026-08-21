@@ -89,6 +89,7 @@
   .c-rose{background:#e34a72}
   .c-emerald{background:#0e9f6e}
   .c-cyan{background:#0891b2}
+  .c-orange{background:#e0621e}
 
   .tile-usage{margin-top:2px;border-top:1px solid var(--line);padding-top:10px;}
   .tile-usage summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;
@@ -183,7 +184,8 @@
     trendingUp: '<path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/>',
     calendar: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v4M17 2v4M3 9h18"/>',
     report: '<path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5M9 13h6M9 17h6M9 9h2"/>',
-    flyer: '<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/><circle cx="16.5" cy="16.5" r="2.5"/>'
+    flyer: '<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/><circle cx="16.5" cy="16.5" r="2.5"/>',
+    megaphone: '<path d="M3 11v2a2 2 0 0 0 2 2h1l2 6h2l-1-6h2l8 4V7l-8 4H5a2 2 0 0 0-2 2z"/><path d="M17 8a3 3 0 0 1 0 8"/>'
   };
   var GRIP_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
     '<circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/>' +
@@ -255,6 +257,14 @@
         '営業所を選ぶと住所・TEL・FAX・担当者が自動で入ります',
         '写真はクリック選択・ドラッグ＆ドロップ・Ctrl+V（⌘V）貼り付けに対応',
         'A4縦1枚で印刷・PDF出力できます'
+      ] },
+    { name:'価格改定・休暇案内作成ツール', desc:'価格改定のご案内と休暇案内文をA4 1枚で作成・印刷', icon:'megaphone', color:'c-orange',
+      url:'https://akamar08taiyo-bot.github.io/taiyo-kakaku-kyuka/', ready:true,
+      usage:[
+        '上部のタブで「休暇案内」「価格改定案内」を切り替えます',
+        '営業所は上部の共通メニューで選ぶと、住所・TEL・FAX・所長名が両モードに反映されます',
+        '休暇案内は宛先・期間を入れるとカレンダー付きでA4 1枚に自動フィットします',
+        '価格改定案内は案内文・対象商品・日付を編集し、印刷またはPDFで出力できます'
       ] }
   ];
 

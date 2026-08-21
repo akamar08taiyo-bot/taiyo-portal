@@ -38,6 +38,10 @@
   .login-btn:hover{background:var(--blue-deep);}
   .form-error{margin-top:2px;margin-bottom:12px;padding:9px 11px;border:1px solid #f0bcbc;
     border-radius:7px;color:#a23a3a;background:#fff3f3;font-size:11px;}
+  .save-warning-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
+    max-width:min(92vw,420px);padding:10px 14px;border:1px solid #f0bcbc;border-radius:9px;
+    color:#a23a3a;background:#fff3f3;font-size:12px;line-height:1.5;box-shadow:0 8px 24px rgba(162,58,58,.14);
+    z-index:50;}
   .login-note{margin-top:18px;padding:11px 12px;border-radius:8px;display:flex;gap:8px;
     color:var(--muted);background:#f1f5f9;font-size:10.5px;line-height:1.6;}
 
@@ -287,14 +291,36 @@
     });
   }
 
+  var saveWarningTimer = null;
+  function showSaveWarning(message){
+    var el = document.getElementById('save-warning-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'save-warning-toast';
+      el.className = 'save-warning-toast hidden';
+      el.setAttribute('role', 'alert');
+      document.body.appendChild(el);
+    }
+    el.textContent = message;
+    el.classList.remove('hidden');
+    if (saveWarningTimer) window.clearTimeout(saveWarningTimer);
+    saveWarningTimer = window.setTimeout(function(){ el.classList.add('hidden'); }, 6000);
+  }
+
   function loadOrder(){
     try {
       var saved = JSON.parse(localStorage.getItem(ORDER_KEY));
       return Array.isArray(saved) ? saved : null;
     } catch(e){ return null; }
   }
+  // 並び順の保存に失敗しても致命的ではないため、警告を出すだけで操作は継続する。
+  // 従来は例外が投げられっぱなしで、保存できたかのように見えていた（COMMON-06）。
   function saveOrder(names){
-    localStorage.setItem(ORDER_KEY, JSON.stringify(names));
+    try {
+      localStorage.setItem(ORDER_KEY, JSON.stringify(names));
+    } catch(e){
+      showSaveWarning('並び順を保存できませんでした。この端末の空き容量、またはプライベート/シークレットモードでないことをご確認ください。');
+    }
   }
   function orderedApps(){
     var saved = loadOrder();
@@ -319,8 +345,16 @@
   function readSession(){
     try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch(e){ return null; }
   }
+  // 保存に失敗しても選択自体は継続できる（次回また選び直すだけで済む）ため、
+  // 警告を出すにとどめる。falseを返すので呼び出し側は必要に応じて判定できる。
   function writeSession(session){
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    try {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      return true;
+    } catch(e){
+      showSaveWarning('営業所の選択を保存できませんでした。この端末では次回もこの画面から選び直してください。');
+      return false;
+    }
   }
   function clearSession(){
     localStorage.removeItem(SESSION_KEY);

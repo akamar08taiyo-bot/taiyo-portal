@@ -88,6 +88,7 @@
   .c-amber{background:#e08a1e} .c-indigo{background:#5850ec} .c-fuchsia{background:#cc35b8}
   .c-rose{background:#e34a72}
   .c-emerald{background:#0e9f6e}
+  .c-cyan{background:#0891b2}
 
   .tile-usage{margin-top:2px;border-top:1px solid var(--line);padding-top:10px;}
   .tile-usage summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;
@@ -181,7 +182,8 @@
     package: '<path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>',
     trendingUp: '<path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/>',
     calendar: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v4M17 2v4M3 9h18"/>',
-    report: '<path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5M9 13h6M9 17h6M9 9h2"/>'
+    report: '<path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5M9 13h6M9 17h6M9 9h2"/>',
+    flyer: '<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/><circle cx="16.5" cy="16.5" r="2.5"/>'
   };
   var GRIP_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
     '<circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/>' +
@@ -245,6 +247,14 @@
         'ログイン後、タイトル横のボタンからExcelを取り込みます（売上状況報告書・担当別売上実績・商品分類別販売売上・居宅別売上推移表・訪問ログに対応）',
         '「営業月報」タブで担当者ごとの月次数字を入力・確認できます',
         '「実績分析」「居宅売上推移分析」「商品販売分析」タブで多角的に確認できます'
+      ] },
+    { name:'チラシ作成', desc:'ケアマネジャー様向けチラシの作成・印刷', icon:'flyer', color:'c-cyan',
+      url:'https://akamar08taiyo-bot.github.io/taiyo-chirashi/', ready:true,
+      usage:[
+        'チラシの型（自費ベッド・新商品・導入事例・複数品同時紹介・消耗品）を選びます',
+        '営業所を選ぶと住所・TEL・FAX・担当者が自動で入ります',
+        '写真はクリック選択・ドラッグ＆ドロップ・Ctrl+V（⌘V）貼り付けに対応',
+        'A4縦1枚で印刷・PDF出力できます'
       ] }
   ];
 

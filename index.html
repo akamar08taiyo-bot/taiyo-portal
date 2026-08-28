@@ -69,10 +69,11 @@
   .tile.drag-over-before{box-shadow:inset 3px 0 0 0 var(--blue);}
   .tile.drag-over-after{box-shadow:inset -3px 0 0 0 var(--blue);}
   .tile-drag{position:absolute;top:14px;left:14px;width:26px;height:26px;border-radius:7px;
-    display:grid;place-items:center;color:#7c8ea3;background:#eef2f8;cursor:grab;touch-action:none;
-    transition:.15s;}
+    display:grid;place-items:center;border:0;padding:0;color:#7c8ea3;background:#eef2f8;cursor:grab;
+    touch-action:none;user-select:none;-webkit-user-select:none;transition:.15s;}
   .tile-drag:hover{color:#fff;background:var(--blue);}
   .tile-drag:active{cursor:grabbing;}
+  .tile-drag:focus-visible{outline:3px solid rgba(37,99,235,.32);outline-offset:2px;}
   .tile-drag svg{width:15px;height:15px;}
   .tile-grid.is-dragging .tile:not(.dragging){cursor:pointer;}
   .hub-heading-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;}
@@ -114,6 +115,8 @@
   @media (max-width:900px){ .tile-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
   @media (max-width:620px){
     .tile-grid{grid-template-columns:1fr;}
+    .tile.drag-over-before{box-shadow:inset 0 3px 0 0 var(--blue);}
+    .tile.drag-over-after{box-shadow:inset 0 -3px 0 0 var(--blue);}
     .topbar{padding:0 14px;} .hub-main{padding:26px 14px 44px;}
     .office-pill{display:none;}
     /* 狭い画面でボタンの文字が2行に折り返さないよう、余白と文字を詰めて1行に収める */
@@ -161,7 +164,7 @@
         <h2>アプリを選択してください</h2>
         <button type="button" class="reset-order-btn" id="reset-order-btn">並び順をリセット</button>
       </div>
-      <p>アイコンをクリックすると、各業務アプリが新しいタブで開きます。左上の <span aria-hidden="true">⠿</span> をドラッグして、動かしたい枠の左半分・右半分に重ねると、その位置に青い線が出るので目印にして手を離してください。前後どちらへも自由に移動できます（この端末に記憶されます）。</p>
+      <p>「このアプリを開く」を押すと、各業務アプリが新しいタブで開きます。左上の <span aria-hidden="true">⠿</span> をドラッグして、青い線を目印に手を離すと並べ替えできます。スマートフォンでは上下へドラッグ、キーボードでは矢印キーで移動できます（この端末に記憶されます）。</p>
     </div>
     <div class="tile-grid" id="tile-grid"></div>
   </main>
@@ -293,11 +296,25 @@
   var dragName = null;
   var dropTargetName = null;
   var dropAfter = false;
+  var pointerDragId = null;
+  var memoryOrder = null;
 
   function clearDragOverClasses(){
     Array.prototype.forEach.call(tileGrid.querySelectorAll('.tile'), function(t){
       t.classList.remove('drag-over-before', 'drag-over-after');
     });
+  }
+
+  function clearDragState(){
+    Array.prototype.forEach.call(tileGrid.querySelectorAll('.tile'), function(t){
+      t.classList.remove('dragging');
+    });
+    clearDragOverClasses();
+    tileGrid.classList.remove('is-dragging');
+    dragName = null;
+    dropTargetName = null;
+    dropAfter = false;
+    pointerDragId = null;
   }
 
   var saveWarningTimer = null;
@@ -317,6 +334,7 @@
   }
 
   function loadOrder(){
+    if (memoryOrder) return memoryOrder.slice();
     try {
       var saved = JSON.parse(localStorage.getItem(ORDER_KEY));
       return Array.isArray(saved) ? saved : null;
@@ -325,6 +343,7 @@
   // 並び順の保存に失敗しても致命的ではないため、警告を出すだけで操作は継続する。
   // 従来は例外が投げられっぱなしで、保存できたかのように見えていた（COMMON-06）。
   function saveOrder(names){
+    memoryOrder = names.slice();
     try {
       localStorage.setItem(ORDER_KEY, JSON.stringify(names));
     } catch(e){
@@ -342,6 +361,37 @@
     });
     APPS.forEach(function(a){ if (byName[a.name]) result.push(a); }); // 新規追加分は末尾へ
     return result;
+  }
+
+  function moveApp(name, targetName, after){
+    var names = orderedApps().map(function(a){ return a.name; });
+    var from = names.indexOf(name);
+    if (from < 0 || name === targetName) return false;
+    names.splice(from, 1);
+    var insertAt = names.indexOf(targetName);
+    if (insertAt < 0) return false;
+    if (after) insertAt += 1;
+    names.splice(insertAt, 0, name);
+    saveOrder(names);
+    renderTiles();
+    return true;
+  }
+
+  function markDropTarget(tile, clientX, clientY){
+    if (!tile || tile.dataset.name === dragName) {
+      clearDragOverClasses();
+      dropTargetName = null;
+      return;
+    }
+    var rect = tile.getBoundingClientRect();
+    var columns = getComputedStyle(tileGrid).gridTemplateColumns.trim().split(/\s+/).length;
+    var after = columns === 1
+      ? (clientY - rect.top) > rect.height / 2
+      : (clientX - rect.left) > rect.width / 2;
+    clearDragOverClasses();
+    tile.classList.add(after ? 'drag-over-after' : 'drag-over-before');
+    dropTargetName = tile.dataset.name;
+    dropAfter = after;
   }
 
   OFFICES.forEach(function(name){
@@ -366,7 +416,11 @@
     }
   }
   function clearSession(){
-    localStorage.removeItem(SESSION_KEY);
+    try { localStorage.removeItem(SESSION_KEY); return true; }
+    catch(e){
+      showSaveWarning('保存済みの営業所情報を削除できませんでした。この画面では選び直せますが、次回は以前の営業所で開く可能性があります。');
+      return false;
+    }
   }
 
   function escapeHtml(value){
@@ -386,7 +440,7 @@
       el.className = 'tile' + (app.ready ? '' : ' disabled');
       el.dataset.name = app.name;
       el.innerHTML =
-        '<span class="tile-drag" draggable="true" title="ドラッグして並べ替え" aria-label="ドラッグして並べ替え">' + GRIP_SVG + '</span>' +
+        '<button type="button" class="tile-drag" draggable="true" title="ドラッグして並べ替え" aria-label="' + escapeHtml(app.name) + 'を並べ替え（矢印キーでも移動できます）">' + GRIP_SVG + '</button>' +
         '<span class="tile-badge ' + (app.ready ? 'badge-ready' : 'badge-soon') + '">' +
           (app.ready ? '利用可能' : '準備中') + '</span>' +
         '<div class="tile-icon ' + app.color + '">' + iconSvg + '</div>' +
@@ -419,19 +473,9 @@
   tileGrid.addEventListener('dragover', function(e){
     if (!dragName) return;
     var tile = e.target.closest('.tile');
-    if (!tile || tile.dataset.name === dragName) {
-      clearDragOverClasses();
-      dropTargetName = null;
-      return;
-    }
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    var rect = tile.getBoundingClientRect();
-    var after = (e.clientX - rect.left) > rect.width / 2;
-    clearDragOverClasses();
-    tile.classList.add(after ? 'drag-over-after' : 'drag-over-before');
-    dropTargetName = tile.dataset.name;
-    dropAfter = after;
+    markDropTarget(tile, e.clientX, e.clientY);
   });
   tileGrid.addEventListener('dragleave', function(e){
     if (!dragName) return;
@@ -443,30 +487,69 @@
   tileGrid.addEventListener('drop', function(e){
     if (!dragName || !dropTargetName) return;
     e.preventDefault();
+    var sourceName = dragName;
     var targetName = dropTargetName;
-    var names = orderedApps().map(function(a){ return a.name; });
-    var from = names.indexOf(dragName);
-    if (from < 0) return;
-    names.splice(from, 1);
-    var insertAt = names.indexOf(targetName);
-    if (dropAfter) insertAt += 1;
-    names.splice(insertAt, 0, dragName);
-    saveOrder(names);
-    renderTiles();
+    var after = dropAfter;
+    clearDragState();
+    moveApp(sourceName, targetName, after);
   });
   tileGrid.addEventListener('dragend', function(){
-    Array.prototype.forEach.call(tileGrid.querySelectorAll('.tile'), function(t){
-      t.classList.remove('dragging');
-    });
-    clearDragOverClasses();
-    tileGrid.classList.remove('is-dragging');
-    dragName = null;
-    dropTargetName = null;
-    dropAfter = false;
+    clearDragState();
+  });
+
+  // HTML5 のドラッグが動かないスマートフォン向けに Pointer Events でも並べ替える。
+  tileGrid.addEventListener('pointerdown', function(e){
+    var handle = e.target.closest('.tile-drag');
+    var tile = handle && handle.closest('.tile');
+    if (!tile || e.pointerType === 'mouse') return;
+    e.preventDefault();
+    dragName = tile.dataset.name;
+    pointerDragId = e.pointerId;
+    tile.classList.add('dragging');
+    tileGrid.classList.add('is-dragging');
+    try { handle.setPointerCapture(e.pointerId); } catch(err){}
+  });
+  tileGrid.addEventListener('pointermove', function(e){
+    if (pointerDragId !== e.pointerId || !dragName) return;
+    e.preventDefault();
+    var hit = document.elementFromPoint(e.clientX, e.clientY);
+    markDropTarget(hit && hit.closest('.tile'), e.clientX, e.clientY);
+  });
+  tileGrid.addEventListener('pointerup', function(e){
+    if (pointerDragId !== e.pointerId || !dragName) return;
+    var sourceName = dragName;
+    var targetName = dropTargetName;
+    var after = dropAfter;
+    clearDragState();
+    if (targetName) moveApp(sourceName, targetName, after);
+  });
+  tileGrid.addEventListener('pointercancel', function(e){
+    if (pointerDragId === e.pointerId) clearDragState();
+  });
+
+  // マウスを使えない利用者も、ハンドルにフォーカスして矢印キーで移動できる。
+  tileGrid.addEventListener('keydown', function(e){
+    var handle = e.target.closest('.tile-drag');
+    if (!handle || !/^Arrow(Left|Right|Up|Down)$/.test(e.key)) return;
+    var tile = handle.closest('.tile');
+    var names = orderedApps().map(function(a){ return a.name; });
+    var from = names.indexOf(tile.dataset.name);
+    var columns = getComputedStyle(tileGrid).gridTemplateColumns.trim().split(/\s+/).length;
+    var delta = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : e.key === 'ArrowUp' ? -columns : columns;
+    var to = Math.max(0, Math.min(names.length - 1, from + delta));
+    if (from < 0 || to === from) return;
+    e.preventDefault();
+    var name = names[from];
+    var targetName = names[to];
+    if (!moveApp(name, targetName, to > from)) return;
+    var moved = Array.prototype.find.call(tileGrid.querySelectorAll('.tile'), function(t){ return t.dataset.name === name; });
+    if (moved) moved.querySelector('.tile-drag').focus();
   });
 
   resetOrderBtn.addEventListener('click', function(){
-    localStorage.removeItem(ORDER_KEY);
+    memoryOrder = APPS.map(function(a){ return a.name; });
+    try { localStorage.removeItem(ORDER_KEY); }
+    catch(e){ showSaveWarning('保存済みの並び順を削除できませんでした。この画面では初期順に戻しましたが、次回は以前の順序で開く可能性があります。'); }
     renderTiles();
   });
 
@@ -503,10 +586,11 @@
   });
 
   var existing = readSession();
-  if (existing && existing.office) {
+  if (existing && OFFICES.indexOf(existing.office) >= 0) {
     officeSelect.value = existing.office;
     showHub(existing);
   } else {
+    if (existing) clearSession();
     showLogin();
   }
 })();

@@ -1,0 +1,8 @@
+{
+  "name": "fukuoka-care-sales-map",
+  "private": true,
+  "description": "介護施設 売上マップ（福岡県）。アプリ本体のビルドは build/ 配下（cd build && npm install && npm run build）。このファイルはテスト実行のためだけに置いている。",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.mjs\""
+  }
+}

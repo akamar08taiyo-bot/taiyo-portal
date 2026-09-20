@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>介護施設 売上マップ（福岡県） - 太陽シルバーサービス</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link id="leaflet-css-placeholder" rel="stylesheet">
+<style>
+  body { font-family: 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', Meiryo, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  ::-webkit-scrollbar { height: 8px; width: 10px; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  #map { width: 100%; height: 100%; background: #e0f2fe; }
+  .leaflet-popup-content { font-size: 13px; }
+</style>
+</head>
+<body class="bg-sky-50">
+<div id="root">
+  <div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#475569;flex-direction:column;gap:8px;">
+    <div style="font-size:18px;font-weight:bold;">介護施設 売上マップ（福岡県）</div>
+    <div style="font-size:13px;">読み込んでいます…（数秒）</div>
+  </div>
+</div>
+<script type="text/babel">
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import ReactDOM from 'react-dom/client';
+import L from 'leaflet';
+import {
+  Building2, Upload, Download, Trash2, RotateCcw, Search, X, AlertTriangle,
+  Info, Users, JapaneseYen, MapPin, ChevronDown, ChevronRight, FileWarning
+} from 'lucide-react';
+import { parseCsv, decodeCsvBuffer, aggregateCsv, SAMPLE_CSV } from '../src/lib/csv.mjs';
+import { jitterLatLng } from '../src/lib/jitter.mjs';
+
+/* ============================================================
+   定数・ユーティリティ
+============================================================ */
+const OFFICE_KEY = 'fukuoka_sales_map_office_v1';
+const DATA_KEY = 'fukuoka_sales_map_data_v1';
+
+const OFFICES = [
+  '小倉営業所','小倉南営業所','八幡西営業所','八幡東営業所','行橋営業所','田川営業所',
+  '飯塚営業所','福岡南営業所','福岡西営業所','福岡東営業所','久留米営業所','大牟田営業所',
+  '佐賀営業所','長崎営業所','大村営業所','壱岐営業所','熊本営業所','熊本北営業所','大分営業所'
+];
+
+const FUKUOKA_BOUNDS = [[32.95, 129.95], [34.15, 131.15]];
+
+const yen = (n) => '¥' + Math.round(n).toLocaleString('ja-JP');
+const num = (n) => Math.round(n).toLocaleString('ja-JP');
+const escapeHTML = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function safeGet(key) {
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+function safeSet(key, value) {
+  try { localStorage.setItem(key, value); return true; } catch { return false; }
+}
+function safeRemove(key) {
+  try { localStorage.removeItem(key); return true; } catch { return false; }
+}
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+function salesColor(t) {
+  // 薄い水色 → 濃い青（Light blue UI のトーンに合わせる）
+  const from = [186, 230, 253]; // sky-200
+  const to = [30, 58, 138]; // blue-900
+  const rgb = from.map((c, i) => Math.round(lerp(c, to[i], t)));
+  return `rgb(${rgb.join(',')})`;
+}
+function salesRadius(t) { return 7 + 17 * Math.sqrt(t); }
+
+/* ============================================================
+   営業所選択（アクセス制限ではない・taiyo-portal と同じ運用ルール）
+============================================================ */
+function OfficeGate({ onSelect, warning }) {
+  const [office, setOffice] = useState(OFFICES[0]);
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-sky-50 px-4">
+      <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg border border-sky-100 p-6">
+        <div className="flex items-center gap-2 mb-1">
+          <Building2 className="w-6 h-6 text-sky-600" />
+          <h1 className="text-lg font-bold text-slate-800">営業所の選択</h1>
+        </div>
+        <p className="text-sm text-slate-500 mb-4">お使いの営業所を選んでください。選んだ営業所はこの端末に記憶されます。</p>
+        <form onSubmit={(e) => { e.preventDefault(); onSelect(office); }}>
+          <label className="block text-xs font-medium text-slate-500 mb-1">営業所</label>
+          <select
+            value={office}
+            onChange={(e) => setOffice(e.target.value)}
+            className="w-full border border-slate-300 rounded-lg px-3 py-2 mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
+          >
+            {OFFICES.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+          <button type="submit" className="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg py-2.5 text-sm transition">
+            この営業所で開く
+          </button>
+        </form>
+        {warning && (
+          <div className="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 flex gap-1.5">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" /><span>{warning}</span>
+          </div>
+        )}
+        <div className="mt-4 text-[11px] leading-relaxed text-slate-400 border-t border-slate-100 pt-3">
+          ⚠️ この画面はアクセス制限ではありません。データの取り扱い状況を把握しやすくするために営業所を選ぶだけの画面で、本人確認は行っていません。
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   ヘッダー
+============================================================ */
+function Header({ office, onChangeOffice, onImportClick, onDownloadSample, onClearData, hasData, fileInputRef, onFileChange }) {
+  return (
+    <header className="bg-white border-b border-sky-100 px-4 py-3 flex flex-wrap items-center gap-3 justify-between">
+      <div className="flex items-center gap-2">
+        <MapPin className="w-6 h-6 text-sky-600" />
+        <div>
+          <h1 className="text-base font-bold text-slate-800 leading-tight">介護施設 売上マップ（福岡県）</h1>
+          <p className="text-[11px] text-slate-400 leading-tight">{office}</p>
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={onFileChange} />
+        <button onClick={onImportClick} className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg px-3 py-2 transition">
+          <Upload className="w-4 h-4" /> CSV取り込み
+        </button>
+        <button onClick={onDownloadSample} className="flex items-center gap-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 text-xs font-semibold rounded-lg px-3 py-2 transition">
+          <Download className="w-4 h-4" /> サンプルCSV
+        </button>
+        {hasData && (
+          <button onClick={onClearData} className="flex items-center gap-1.5 bg-white border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold rounded-lg px-3 py-2 transition">
+            <Trash2 className="w-4 h-4" /> データをクリア
+          </button>
+        )}
+        <button onClick={onChangeOffice} className="flex items-center gap-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 text-xs font-semibold rounded-lg px-3 py-2 transition">
+          <RotateCcw className="w-4 h-4" /> 営業所を変更
+        </button>
+      </div>
+    </header>
+  );
+}
+
+/* ============================================================
+   統計タイル
+============================================================ */
+function StatTile({ icon, label, value, accent }) {
+  return (
+    <div className="bg-white rounded-xl border border-sky-100 px-4 py-3 flex items-center gap-3 flex-1 min-w-[150px]">
+      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${accent}`}>{icon}</div>
+      <div>
+        <div className="text-[11px] text-slate-400">{label}</div>
+        <div className="text-base font-bold text-slate-800">{value}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   地図
+============================================================ */
+function MapView({ facilities, selectedKey, onSelectFacility }) {
+  const containerRef = useRef(null);
+  const mapRef = useRef(null);
+  const layerRef = useRef(null);
+  const markerByKeyRef = useRef(new Map());
+
+  useEffect(() => {
+    if (mapRef.current) return;
+    const map = L.map(containerRef.current, { scrollWheelZoom: true });
+    map.fitBounds(FUKUOKA_BOUNDS);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 18,
+    }).addTo(map);
+    layerRef.current = L.layerGroup().addTo(map);
+    mapRef.current = map;
+    return () => { map.remove(); mapRef.current = null; };
+  }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const layer = layerRef.current;
+    if (!map || !layer) return;
+    layer.clearLayers();
+    markerByKeyRef.current = new Map();
+
+    const maxSales = Math.max(1, ...facilities.map((f) => f.sales));
+    const bounds = [];
+
+    facilities.forEach((f) => {
+      const { lat, lng } = jitterLatLng(f.key, f.lat, f.lng);
+      const t = f.sales / maxSales;
+      const marker = L.circleMarker([lat, lng], {
+        radius: salesRadius(t),
+        color: '#0369a1',
+        weight: 1.5,
+        fillColor: salesColor(t),
+        fillOpacity: 0.85,
+      });
+      const assignees = f.assignees.length ? f.assignees.map(escapeHTML).join('、') : '(未設定)';
+      marker.bindPopup(
+        `<div class="font-sans"><div class="font-bold text-sm mb-1">${escapeHTML(f.facility)}</div>` +
+        `<div class="text-xs text-slate-500 mb-1">${escapeHTML(f.municipality)}</div>` +
+        `<div class="text-xs">担当: ${assignees}</div>` +
+        `<div class="text-sm font-bold text-sky-700 mt-1">${yen(f.sales)}</div>` +
+        `<div class="text-[11px] text-slate-400">明細 ${f.count}件</div></div>`
+      );
+      marker.on('click', () => onSelectFacility(f.key));
+      marker.addTo(layer);
+      markerByKeyRef.current.set(f.key, marker);
+      bounds.push([lat, lng]);
+    });
+
+    if (bounds.length > 0) map.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
+    else map.fitBounds(FUKUOKA_BOUNDS);
+  }, [facilities]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const marker = selectedKey && markerByKeyRef.current.get(selectedKey);
+    if (map && marker) {
+      map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 12), { duration: 0.5 });
+      marker.openPopup();
+    }
+  }, [selectedKey]);
+
+  return (
+    <div className="relative flex-1 min-h-[320px]">
+      <div id="map" ref={containerRef}></div>
+      <div className="absolute bottom-3 left-3 bg-white/95 rounded-lg shadow px-3 py-2 text-[11px] text-slate-600 space-y-1 z-[1000]">
+        <div className="font-semibold text-slate-700">凡例</div>
+        <div className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 rounded-full" style={{ background: salesColor(0.15) }}></span>売上 小</div>
+        <div className="flex items-center gap-1.5"><span className="inline-block w-4 h-4 rounded-full" style={{ background: salesColor(0.9) }}></span>売上 大（円が大きいほど高額）</div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   施設一覧（自治体でグループ化）
+============================================================ */
+function FacilityList({ facilities, search, setSearch, selectedKey, onSelectFacility }) {
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return facilities;
+    return facilities.filter((f) =>
+      f.facility.toLowerCase().includes(q) ||
+      f.municipality.toLowerCase().includes(q) ||
+      f.assignees.some((a) => a.toLowerCase().includes(q))
+    );
+  }, [facilities, search]);
+
+  const groups = useMemo(() => {
+    const map = new Map();
+    filtered.forEach((f) => {
+      if (!map.has(f.municipality)) map.set(f.municipality, []);
+      map.get(f.municipality).push(f);
+    });
+    return [...map.entries()];
+  }, [filtered]);
+
+  return (
+    <div className="w-full lg:w-96 flex flex-col bg-white border-t lg:border-t-0 lg:border-l border-sky-100 max-h-[45vh] lg:max-h-none">
+      <div className="p-3 border-b border-sky-100">
+        <div className="relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="施設名・自治体・担当者で検索"
+            className="w-full pl-8 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-400"
+          />
+        </div>
+      </div>
+      <div className="overflow-y-auto flex-1">
+        {groups.length === 0 && (
+          <div className="text-center text-sm text-slate-400 py-10 px-4">該当する施設がありません</div>
+        )}
+        {groups.map(([municipality, items]) => {
+          const subtotal = items.reduce((s, f) => s + f.sales, 0);
+          return (
+            <div key={municipality}>
+              <div className="sticky top-0 bg-sky-50 px-3 py-1.5 flex items-center justify-between border-b border-sky-100">
+                <span className="text-xs font-bold text-sky-800">{municipality}</span>
+                <span className="text-xs text-sky-700">{yen(subtotal)}</span>
+              </div>
+              {items.map((f) => (
+                <button
+                  key={f.key}
+                  onClick={() => onSelectFacility(f.key)}
+                  className={`w-full text-left px-3 py-2 border-b border-slate-50 hover:bg-sky-50 transition ${selectedKey === f.key ? 'bg-sky-100' : ''}`}
+                >
+                  <div className="text-sm font-medium text-slate-800">{f.facility}</div>
+                  <div className="flex items-center justify-between mt-0.5">
+                    <span className="text-[11px] text-slate-400 flex items-center gap-1"><Users className="w-3 h-3" />{f.assignees.join('、') || '(未設定)'}</span>
+                    <span className="text-xs font-bold text-sky-700">{yen(f.sales)}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   未解決の自治体名などの警告パネル
+============================================================ */
+function ImportWarnings({ result, onDismiss }) {
+  if (!result) return null;
+  if (result.missingColumns && result.missingColumns.length > 0) {
+    const labels = { facility: '施設名', municipality: '自治体', assignee: '担当者', sales: '売上' };
+    return (
+      <div className="mx-4 mt-3 bg-rose-50 border border-rose-200 rounded-lg p-3 flex items-start gap-2 text-sm text-rose-700">
+        <FileWarning className="w-4 h-4 mt-0.5 flex-shrink-0" />
+        <div className="flex-1">
+          CSVに必要な列が見つかりませんでした（不足: {result.missingColumns.map((k) => labels[k]).join('、')}）。
+          「サンプルCSV」を参考に、1行目の見出しを「施設名, 自治体, 担当者, 売上」にしてください。
+        </div>
+        <button onClick={onDismiss}><X className="w-4 h-4 text-rose-400" /></button>
+      </div>
+    );
+  }
+  if (!result.unresolvedMunicipalities || result.unresolvedMunicipalities.length === 0) return null;
+  return (
+    <div className="mx-4 mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2 text-sm text-amber-800">
+      <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+      <div className="flex-1">
+        <div>福岡県内の自治体として認識できなかった{result.unresolvedMunicipalities.length}件があり、集計から除外しました。</div>
+        <div className="text-xs mt-1 text-amber-700">
+          {result.unresolvedMunicipalities.slice(0, 8).map((u) => `${u.municipality}（${u.count}件）`).join('、')}
+          {result.unresolvedMunicipalities.length > 8 && ' …他'}
+        </div>
+      </div>
+      <button onClick={onDismiss}><X className="w-4 h-4 text-amber-500" /></button>
+    </div>
+  );
+}
+
+/* ============================================================
+   空データ時のガイド
+============================================================ */
+function EmptyState({ onImportClick, onDownloadSample }) {
+  return (
+    <div className="flex-1 flex items-center justify-center p-6">
+      <div className="max-w-md text-center bg-white rounded-2xl border border-sky-100 shadow-sm p-8">
+        <MapPin className="w-10 h-10 text-sky-400 mx-auto mb-3" />
+        <h2 className="text-base font-bold text-slate-800 mb-1">まだデータがありません</h2>
+        <p className="text-sm text-slate-500 mb-5">
+          「施設名, 自治体, 担当者, 売上」の列を持つCSVを取り込むと、施設ごとの売上を福岡県の地図上にプロットします。
+          同じ施設の行は自動で合算されます。
+        </p>
+        <div className="flex items-center justify-center gap-2">
+          <button onClick={onImportClick} className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold rounded-lg px-4 py-2.5 transition">
+            <Upload className="w-4 h-4" /> CSVを取り込む
+          </button>
+          <button onClick={onDownloadSample} className="flex items-center gap-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 text-sm font-semibold rounded-lg px-4 py-2.5 transition">
+            <Download className="w-4 h-4" /> サンプルCSV
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   ルート
+============================================================ */
+function App() {
+  const [office, setOffice] = useState(() => {
+    try { return JSON.parse(safeGet(OFFICE_KEY) || 'null'); } catch { return null; }
+  });
+  const [officeWarning, setOfficeWarning] = useState('');
+  const [data, setData] = useState(() => {
+    try { return JSON.parse(safeGet(DATA_KEY) || 'null'); } catch { return null; }
+  });
+  const [importResult, setImportResult] = useState(null);
+  const [selectedKey, setSelectedKey] = useState(null);
+  const [search, setSearch] = useState('');
+  const fileInputRef = useRef(null);
+
+  const facilities = data?.facilities || [];
+
+  const handleSelectOffice = useCallback((name) => {
+    const ok = safeSet(OFFICE_KEY, JSON.stringify({ office: name, at: Date.now() }));
+    if (!ok) setOfficeWarning('営業所の選択を保存できませんでした。この端末では次回もこの画面から選び直してください。');
+    setOffice({ office: name });
+  }, []);
+
+  const handleChangeOffice = useCallback(() => {
+    if (!window.confirm('営業所の選択を解除しますか？')) return;
+    safeRemove(OFFICE_KEY);
+    setOffice(null);
+  }, []);
+
+  const applyResult = useCallback((result) => {
+    setImportResult(result);
+    if (result.missingColumns && result.missingColumns.length > 0) return;
+    const payload = { facilities: result.facilities, importedAt: Date.now(), totalRows: result.totalRows, skippedRows: result.skippedRows };
+    setData(payload);
+    setSelectedKey(null);
+    const ok = safeSet(DATA_KEY, JSON.stringify(payload));
+    if (!ok) setImportResult({ ...result, saveWarning: true });
+  }, []);
+
+  const handleFileChange = useCallback((e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const text = decodeCsvBuffer(reader.result);
+        const rows = parseCsv(text);
+        const result = aggregateCsv(rows);
+        applyResult(result);
+      } catch (err) {
+        window.alert('CSVの読み込みに失敗しました: ' + err.message);
+      }
+    };
+    reader.onerror = () => window.alert('ファイルを読み込めませんでした。');
+    reader.readAsArrayBuffer(file);
+  }, [applyResult]);
+
+  const handleDownloadSample = useCallback(() => {
+    const blob = new Blob([SAMPLE_CSV], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'サンプル_介護施設売上.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, []);
+
+  const handleClearData = useCallback(() => {
+    if (!window.confirm('取り込み済みのデータをすべて削除しますか？この操作は取り消せません。')) return;
+    safeRemove(DATA_KEY);
+    setData(null);
+    setImportResult(null);
+    setSelectedKey(null);
+  }, []);
+
+  const stats = useMemo(() => {
+    const totalSales = facilities.reduce((s, f) => s + f.sales, 0);
+    const municipalities = new Set(facilities.map((f) => f.municipality));
+    return { totalSales, facilityCount: facilities.length, municipalityCount: municipalities.size };
+  }, [facilities]);
+
+  if (!office) return <OfficeGate onSelect={handleSelectOffice} warning={officeWarning} />;
+
+  return (
+    <div className="min-h-screen flex flex-col bg-sky-50">
+      <Header
+        office={office.office}
+        onChangeOffice={handleChangeOffice}
+        onImportClick={() => fileInputRef.current && fileInputRef.current.click()}
+        onDownloadSample={handleDownloadSample}
+        onClearData={handleClearData}
+        hasData={facilities.length > 0}
+        fileInputRef={fileInputRef}
+        onFileChange={handleFileChange}
+      />
+
+      <ImportWarnings result={importResult} onDismiss={() => setImportResult(null)} />
+
+      {facilities.length > 0 && (
+        <div className="flex flex-wrap gap-3 px-4 pt-3">
+          <StatTile icon={<JapaneseYen className="w-4 h-4 text-white" />} accent="bg-sky-600" label="合計売上" value={yen(stats.totalSales)} />
+          <StatTile icon={<Building2 className="w-4 h-4 text-white" />} accent="bg-sky-500" label="施設数" value={num(stats.facilityCount) + ' 件'} />
+          <StatTile icon={<MapPin className="w-4 h-4 text-white" />} accent="bg-sky-400" label="自治体数" value={num(stats.municipalityCount) + ' 自治体'} />
+        </div>
+      )}
+
+      <div className="flex flex-col lg:flex-row flex-1 min-h-0 p-4 gap-4">
+        {facilities.length === 0 ? (
+          <EmptyState onImportClick={() => fileInputRef.current && fileInputRef.current.click()} onDownloadSample={handleDownloadSample} />
+        ) : (
+          <div className="flex flex-col lg:flex-row flex-1 min-h-[520px] rounded-2xl overflow-hidden border border-sky-100 shadow-sm bg-white">
+            <MapView facilities={facilities} selectedKey={selectedKey} onSelectFacility={setSelectedKey} />
+            <FacilityList facilities={facilities} search={search} setSearch={setSearch} selectedKey={selectedKey} onSelectFacility={setSelectedKey} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

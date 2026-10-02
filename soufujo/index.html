@@ -85,6 +85,9 @@
   .tpl-box strong{display:block;font-size:13.5px;color:var(--navy);}
   .tpl-box small{display:block;margin-top:2px;font-size:11.5px;color:var(--muted);}
   .sub-fields{margin-top:12px;padding:12px;border-radius:10px;background:#f6f8fb;border:1px dashed #cfd9e4;}
+  .env-fields{margin:0 0 12px;}
+  .sub-title{margin:0 0 10px;color:var(--navy);font-size:12.5px;font-weight:800;}
+  .zip-input{max-width:180px;}
 
   /* 同封書類 */
   .doc-list{display:grid;gap:6px;}
@@ -140,6 +143,7 @@
   .tabs{display:inline-flex;padding:3px;border:1px solid var(--line);border-radius:10px;background:#f1f4f8;}
   .tab{border:0;background:none;padding:8px 13px;border-radius:8px;color:#54677c;font-size:13px;font-weight:800;cursor:pointer;}
   .tab[aria-selected="true"]{background:var(--navy);color:#fff;}
+  .head-actions{display:flex;flex-wrap:wrap;gap:8px;}
   .preview-body{flex:1;min-height:0;overflow:auto;padding:14px 16px 20px;}
   .status-line{margin:0 0 10px;font-size:12px;color:#40566d;line-height:1.6;}
   .status-line.is-warn{color:#8a5a00;}
@@ -148,9 +152,11 @@
     color:var(--danger);background:var(--danger-bg);font-size:12px;line-height:1.6;}
   .print-error ul{margin:4px 0 0;padding-left:18px;}
   .label-options{margin:0 0 12px;padding:12px;border-radius:10px;background:#fff;border:1px solid var(--line);
-    display:grid;gap:10px;font-size:12.5px;color:#3c5068;}
+    display:grid;grid-template-columns:minmax(0,1fr);gap:10px;font-size:12.5px;color:#3c5068;}
   .opt-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;}
-  .opt-row label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;}
+  .opt-row label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;max-width:100%;min-width:0;}
+  .opt-label{flex:none;white-space:nowrap;}
+  .opt-row .mini-select{flex:1 1 auto;min-width:0;max-width:100%;}
   .opt-row input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--blue);}
   .opt-row .btn{height:32px;padding:0 10px;font-size:12px;}
   .sheet-frame{position:relative;margin:0 auto;}
@@ -211,6 +217,32 @@
   .label-slot.is-off::after{content:'印刷しない';position:absolute;inset:0;display:grid;place-items:center;
     color:#6b7c8f;font-size:11pt;font-weight:700;letter-spacing:.1em;}
 
+  /* ---------- 封筒（A4を上下に2分割：上＝送付用、下＝返送用） ---------- */
+  .layout-set .half{position:absolute;left:0;width:210mm;height:148.5mm;display:flex;align-items:center;justify-content:center;}
+  .layout-set .half-send{top:0;}
+  .layout-set .half-return{top:148.5mm;}
+  .env-box{width:176mm;height:114mm;padding:10mm 16mm 9mm;display:flex;flex-direction:column;overflow:hidden;}
+  .layout-set.show-guides .env-box{border:.3mm solid #9aa5b1;border-radius:2mm;}
+  .env-zip{font-size:15pt;line-height:1.5;letter-spacing:.04em;}
+  .env-addr{font-size:15pt;line-height:1.5;overflow-wrap:anywhere;}
+  .env-name{margin:auto 0;padding:3mm 0;text-align:center;font-size:26pt;font-weight:700;line-height:1.3;overflow-wrap:anywhere;}
+  .env-sama{margin-left:.6em;}
+  .env-foot{display:flex;align-items:flex-end;gap:4mm;}
+  .env-tag{align-self:flex-start;margin:0 0 4mm;padding:.8mm 4mm .8mm 5mm;border:.5mm solid #111;font-size:14pt;
+    font-weight:700;letter-spacing:.3em;line-height:1.3;}
+  .env-dest{margin:auto 0;padding:3mm 0;}
+  .env-org{font-size:17pt;font-weight:700;line-height:1.35;}
+  .env-to{margin-top:4mm;text-align:right;font-size:24pt;font-weight:700;line-height:1.2;white-space:nowrap;}
+  .env-role{margin-right:.5em;font-size:13pt;font-weight:500;}
+  .env-suffix{margin-left:.6em;}
+  .env-zaichu{flex:none;padding:1mm 3mm;border:.45mm solid #d0021b;color:#d0021b;font-size:13pt;font-weight:700;
+    letter-spacing:.15em;line-height:1.3;}
+  .env-from{margin-left:auto;color:#333;font-size:9pt;line-height:1.55;text-align:right;}
+  .env-cut{position:absolute;left:0;right:0;top:148.5mm;border-top:.35mm dashed #666;}
+  .env-cut span{position:absolute;left:50%;top:0;transform:translate(-50%,-50%);display:inline-flex;align-items:center;
+    gap:1.5mm;padding:0 3mm;background:#fff;color:#555;font-size:9pt;white-space:nowrap;}
+  .env-cut svg{width:4.2mm;height:4.2mm;}
+
   .save-warning-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
     max-width:min(92vw,440px);padding:10px 14px;border:1px solid var(--danger-line);border-radius:9px;
     color:var(--danger);background:var(--danger-bg);font-size:12px;line-height:1.5;
@@ -228,7 +260,8 @@
     .card{padding:16px 14px 14px;}
     .row2{grid-template-columns:minmax(0,1fr) 96px;}
     .preview-head{padding:10px 12px;}
-    .preview-head .btn{flex:1 1 100%;}
+    .head-actions{flex:1 1 100%;}
+    .head-actions .btn{flex:1 1 0;padding:0 10px;}
   }
 
   /* ---------- 印刷 ---------- */
@@ -241,8 +274,12 @@
     .preview-body{padding:0;overflow:visible;}
     .sheet-frame{display:none !important;}
     body[data-print="letter"] #frame-letter,
-    body[data-print="labels"] #frame-labels{display:block !important;position:static !important;
+    body[data-print="labels"] #frame-labels,
+    body[data-print="both"] #frame-letter,
+    body[data-print="both"] #frame-labels{display:block !important;position:static !important;
       visibility:visible !important;width:210mm !important;height:296.5mm !important;margin:0 !important;}
+    body[data-print="both"] #frame-labels{break-after:page;page-break-after:always;}
+    .screen-only{display:none !important;}
     .sheet{position:static !important;transform:none !important;box-shadow:none !important;height:296.5mm;}
     .label-slot.is-off{visibility:hidden;}
     .missing{color:inherit;background:none;}
@@ -287,6 +324,19 @@
         <input id="addressee-input" type="text" autocomplete="off" placeholder="空欄ならご利用者名あてになります" />
       </label>
       <p class="hint" style="margin:-4px 0 12px">ご家族など、ご利用者様以外にお送りするときだけ入力します。「様」は自動で付きます。</p>
+      <div class="sub-fields env-fields">
+        <p class="sub-title">封筒（送付用）のあて先</p>
+        <label class="field"><span class="field-label">郵便番号<span class="tag-opt">封筒用</span></span>
+          <input id="zip-input" class="zip-input" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="例）824-0000" />
+        </label>
+        <label class="field"><span class="field-label">住所<span class="tag-opt">封筒用</span></span>
+          <input id="addr1-input" type="text" autocomplete="off" placeholder="例）福岡県行橋市〇〇1-2-3" />
+        </label>
+        <label class="field"><span class="field-label">建物名・部屋番号など<span class="tag-opt">任意</span></span>
+          <input id="addr2-input" type="text" autocomplete="off" placeholder="例）〇〇マンション101号" />
+        </label>
+        <p class="hint">お送りする封筒の宛名（A4上半分）に印刷されます。送付状には載らず、この端末にも保存されません。<button type="button" class="link-btn goto-env">封筒を確認する</button></p>
+      </div>
       <div class="field"><span class="field-label">日付</span>
         <div class="row2">
           <input id="date-input" type="date" aria-label="日付" />
@@ -318,7 +368,7 @@
     <div class="card">
       <h2><span class="step">4</span>同封する書類</h2>
       <div class="doc-list" id="doc-list"></div>
-      <div class="env-hint hidden" id="env-hint">返送用封筒に貼る宛名ラベルは、<button type="button" class="link-btn" id="goto-labels">「返送用封筒ラベル」タブ</button>から印刷できます。</div>
+      <div class="env-hint hidden" id="env-hint">返送用封筒に貼る宛名は、<button type="button" class="link-btn goto-env" id="goto-labels">「封筒」タブ</button>で、お送りする封筒の宛名と上下セットで印刷できます。</div>
       <div class="notes-box">
         <h3>注意書き（※）</h3>
         <div id="auto-notes"></div>
@@ -351,9 +401,12 @@
     <div class="preview-head">
       <div class="tabs" role="tablist" aria-label="プレビューの切り替え">
         <button type="button" class="tab" role="tab" id="tab-letter" aria-controls="panel-letter" aria-selected="true">送付状</button>
-        <button type="button" class="tab" role="tab" id="tab-labels" aria-controls="panel-labels" aria-selected="false" tabindex="-1">返送用封筒ラベル</button>
+        <button type="button" class="tab" role="tab" id="tab-labels" aria-controls="panel-labels" aria-selected="false" tabindex="-1">封筒（送付用・返送用）</button>
       </div>
-      <button type="button" class="btn btn-primary" id="print-btn">送付状を印刷</button>
+      <div class="head-actions">
+        <button type="button" class="btn btn-ghost" id="print-both-btn" title="1枚目に封筒（送付用・返送用）、2枚目に送付状を続けて印刷します">まとめて印刷</button>
+        <button type="button" class="btn btn-primary" id="print-btn">送付状を印刷</button>
+      </div>
     </div>
     <div class="preview-body" id="preview-body">
       <div class="print-error hidden" id="print-error" role="alert"></div>
@@ -364,10 +417,10 @@
       <div id="panel-labels" role="tabpanel" aria-labelledby="tab-labels" class="hidden">
         <div class="label-options">
           <div class="opt-row">
-            <label>用紙
+            <label><span class="opt-label">用紙</span>
               <select class="mini-select" id="layout-select"></select>
             </label>
-            <label>名前のあと
+            <label><span class="opt-label">名前のあと</span>
               <select class="mini-select" id="suffix-select">
                 <option value="宛">宛</option>
                 <option value="行">行</option>
@@ -375,18 +428,23 @@
             </label>
           </div>
           <div class="opt-row">
-            <label><input type="checkbox" id="guides-check" /> 切り取り線（枠）を印刷する</label>
+            <label><input type="checkbox" id="guides-check" /> <span id="guides-text">切り取り線（枠）を印刷する</span></label>
             <label><input type="checkbox" id="zaichu-check" /> 「書類在中」を入れる</label>
+            <label id="from-opt"><input type="checkbox" id="from-check" /> 送付用に差出人（営業所）を入れる</label>
           </div>
-          <div class="opt-row">
+          <div class="opt-row" id="slot-row">
             <span id="slot-count" aria-live="polite"></span>
             <button type="button" class="btn btn-ghost" id="slots-all">すべて印刷する</button>
             <button type="button" class="btn btn-ghost" id="slots-none">すべて外す</button>
           </div>
-          <p class="hint">下のラベルをクリックすると、その位置を「印刷する／しない」に切り替えられます（使いかけのラベル用紙に便利です）。</p>
+          <p class="hint" id="slot-hint">下のラベルをクリックすると、その位置を「印刷する／しない」に切り替えられます（使いかけのラベル用紙に便利です）。</p>
+          <p class="hint" id="set-hint">真ん中の線で切り取り、上半分（送付用）はお送りする封筒に、下半分（返送用）は同封する返送用封筒に貼ってください。お客様の郵便番号・住所は「2 お客様」で入力します。</p>
         </div>
       </div>
 
+      <div class="sheet-frame is-inactive" id="frame-labels">
+        <div class="sheet labels" id="labels-sheet" role="group" aria-label="封筒・ラベルのプレビュー"></div>
+      </div>
       <div class="sheet-frame" id="frame-letter">
         <article class="sheet letter" id="letter" aria-label="送付状のプレビュー">
           <div class="lt-top">
@@ -402,11 +460,8 @@
           <div class="lt-end">以上</div>
         </article>
       </div>
-      <div class="sheet-frame is-inactive" id="frame-labels">
-        <div class="sheet labels" id="labels-sheet" role="group" aria-label="返送用封筒ラベルのプレビュー"></div>
-      </div>
 
-      <p class="print-tips">印刷のしかた：印刷画面で「用紙サイズ：A4」「倍率：100%（実際のサイズ）」「余白：なし（または既定）」を選びます。PDFで保存する場合は、送信先で「PDFに保存」を選んでください。<span id="label-tips" class="hidden">ラベル用紙に初めて印刷するときは、普通紙に試し印刷し、ラベル用紙と重ねて位置が合うか確かめてください。</span></p>
+      <p class="print-tips">印刷のしかた：印刷画面で「用紙サイズ：A4」「倍率：100%（実際のサイズ）」「余白：なし（または既定）」を選びます。PDFで保存する場合は、送信先で「PDFに保存」を選んでください。「まとめて印刷」では、1枚目に封筒、2枚目に送付状を続けて印刷します。<span id="label-tips" class="hidden">ラベル用紙に初めて印刷するときは、普通紙に試し印刷し、ラベル用紙と重ねて位置が合うか確かめてください。</span></p>
     </div>
   </section>
 </main>
@@ -491,11 +546,14 @@
   };
   var DEFAULT_FUBI_DOC = '預金口座振替依頼書・自動払込利用申込書';
 
-  // 一般的なA4ラベル用紙の寸法（mm）
+  // 封筒（A4を上下に2分割）と、一般的なA4ラベル用紙の寸法（mm）
   var LAYOUTS = {
-    a10: { name:'A4 10面（86.4×50.8mm）', cols:2, rows:5, w:86.4, h:50.8, top:21.5, left:18.6 },
-    a12: { name:'A4 12面（86.4×42.3mm）', cols:2, rows:6, w:86.4, h:42.3, top:21.6, left:18.6 }
+    set: { name:'A4 上下2分割（送付用＋返送用）', type:'set' },
+    a10: { name:'A4 10面ラベル（返送用のみ・86.4×50.8mm）', type:'grid', cols:2, rows:5, w:86.4, h:50.8, top:21.5, left:18.6 },
+    a12: { name:'A4 12面ラベル（返送用のみ・86.4×42.3mm）', type:'grid', cols:2, rows:6, w:86.4, h:42.3, top:21.6, left:18.6 }
   };
+  var SCISSORS_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg>';
 
   var state = {
     staff: '',
@@ -508,7 +566,7 @@
     slotsOff: {},
     tab: 'letter',
     letterOverflow: false,
-    prefs: { era:'seireki', layout:'a10', suffix:'宛', guides:true, zaichu:false }
+    prefs: { era:'seireki', layout:'set', suffix:'宛', guides:true, zaichu:false, from:false }
   };
   var mobiles = {};
   var memory = {};
@@ -517,19 +575,20 @@
   var staffGroup = $('staff-group'), staffCallout = $('staff-callout');
   var mobileInput = $('mobile-input'), mobileHint = $('mobile-hint');
   var userInput = $('user-input'), addresseeInput = $('addressee-input');
+  var zipInput = $('zip-input'), addr1Input = $('addr1-input'), addr2Input = $('addr2-input');
   var dateInput = $('date-input'), eraSelect = $('era-select');
   var tplList = $('tpl-list'), resendFields = $('resend-fields');
   var fubiDocInput = $('fubi-doc-input'), fubiDetailInput = $('fubi-detail-input');
   var docList = $('doc-list'), envHint = $('env-hint');
   var autoNotesBox = $('auto-notes'), autoNotesEmpty = $('auto-notes-empty'), extraNotes = $('extra-notes');
   var titleInput = $('title-input'), bodyInput = $('body-input');
-  var printBtn = $('print-btn'), printError = $('print-error'), fitStatus = $('fit-status');
+  var printBtn = $('print-btn'), printBothBtn = $('print-both-btn'), printError = $('print-error'), fitStatus = $('fit-status');
   var tabLetter = $('tab-letter'), tabLabels = $('tab-labels');
   var panelLetter = $('panel-letter'), panelLabels = $('panel-labels');
   var frameLetter = $('frame-letter'), frameLabels = $('frame-labels');
   var letter = $('letter'), labelsSheet = $('labels-sheet'), previewBody = $('preview-body');
   var layoutSelect = $('layout-select'), suffixSelect = $('suffix-select');
-  var guidesCheck = $('guides-check'), zaichuCheck = $('zaichu-check'), slotCount = $('slot-count');
+  var guidesCheck = $('guides-check'), zaichuCheck = $('zaichu-check'), fromCheck = $('from-check'), slotCount = $('slot-count');
 
   // ---------- 保存（失敗しても操作は続けられるよう、警告だけ出す） ----------
   var toastTimer = null;
@@ -595,6 +654,23 @@
       return name + (ey === 1 ? '元' : ey) + '年' + mo + '月' + d + '日';
     }
     return y + '年' + mo + '月' + d + '日';
+  }
+
+  // 郵便番号：全角数字も受け付け、7桁なら「824-0043」の形にそろえる
+  function zipDigits(value){
+    return String(value || '').replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })
+      .replace(/[^0-9]/g, '');
+  }
+  function formatZip(value){
+    var d = zipDigits(value);
+    return d.length === 7 ? d.slice(0, 3) + '-' + d.slice(3) : cleanText(value);
+  }
+  // 送付状と封筒（送付用）のあて名：宛名が空ならご利用者名
+  function recipientName(){
+    return personName(addresseeInput.value) || personName(userInput.value);
+  }
+  function currentLayout(){
+    return LAYOUTS[state.prefs.layout] || LAYOUTS.set;
   }
 
   // ---------- 画面の組み立て ----------
@@ -759,8 +835,7 @@
   }
 
   function renderLetter(items, notes){
-    var user = personName(userInput.value);
-    var to = personName(addresseeInput.value) || user;
+    var to = recipientName();
     var honorific = /御中$/.test(to) ? '' : '<span class="sama">様</span>';
     $('lt-to').innerHTML = (to ? escapeHtml(to) : missingSpan('（宛名）')) + honorific;
     $('lt-date').textContent = formatDate(dateInput.value, state.prefs.era);
@@ -827,9 +902,62 @@
     '</span>';
   }
 
+  function envelopeSetHtml(){
+    var to = recipientName();
+    var zip = formatZip(zipInput.value);
+    var addr1 = cleanText(addr1Input.value), addr2 = cleanText(addr2Input.value);
+    var zaichu = state.prefs.zaichu ? '<div class="env-zaichu">書類在中</div>' : '';
+    var from = state.prefs.from
+      ? '<div class="env-from">〒' + escapeHtml(OFFICE.zip) + '　' + escapeHtml(OFFICE.address) + '<br>' +
+          escapeHtml(OFFICE.company) + '　' + escapeHtml(OFFICE.office) + '<br>TEL ' + escapeHtml(OFFICE.tel) + '</div>'
+      : '';
+    var staff = state.staff ? escapeHtml(state.staff) : missingSpan('担当者');
+    var send =
+      '<section class="half half-send" aria-label="上半分：送付用（お客様あて）"><div class="env-box">' +
+        '<div class="env-zip">' + (zip ? '〒' + escapeHtml(zip) : '<span class="missing screen-only">〒（郵便番号）</span>') + '</div>' +
+        '<div class="env-addr">' + (addr1 ? escapeHtml(addr1) : missingSpan('（住所）')) + '</div>' +
+        (addr2 ? '<div class="env-addr">' + escapeHtml(addr2) + '</div>' : '') +
+        '<div class="env-name">' + (to ? escapeHtml(to) : missingSpan('（宛名）')) +
+          (/御中$/.test(to) ? '' : '<span class="env-sama">様</span>') + '</div>' +
+        ((zaichu || from) ? '<div class="env-foot">' + zaichu + from + '</div>' : '') +
+      '</div></section>';
+    var ret =
+      '<section class="half half-return" aria-label="下半分：返送用（営業所あて）"><div class="env-box">' +
+        '<div class="env-tag">返送用</div>' +
+        '<div class="env-zip">〒' + escapeHtml(OFFICE.zip) + '</div>' +
+        '<div class="env-addr">' + escapeHtml(OFFICE.address) + '</div>' +
+        '<div class="env-dest">' +
+          '<div class="env-org">' + escapeHtml(OFFICE.companyShort + OFFICE.office) + '</div>' +
+          '<div class="env-to"><span class="env-role">営業担当</span>' + staff +
+          '<span class="env-suffix">' + escapeHtml(state.prefs.suffix) + '</span></div>' +
+        '</div>' +
+        (zaichu ? '<div class="env-foot">' + zaichu + '</div>' : '') +
+      '</div></section>';
+    var cut = '<div class="env-cut" aria-hidden="true"><span>' + SCISSORS_SVG + 'キリトリ</span></div>';
+    return send + ret + cut;
+  }
+
+  function updatePrintUI(){
+    var isSet = currentLayout().type === 'set';
+    printBtn.textContent = state.tab === 'letter' ? '送付状を印刷' : (isSet ? '封筒を印刷' : 'ラベルを印刷');
+    $('label-tips').classList.toggle('hidden', state.tab === 'letter' || isSet);
+  }
+
   function renderLabels(focusSlot){
-    var key = LAYOUTS[state.prefs.layout] ? state.prefs.layout : 'a10';
+    var key = LAYOUTS[state.prefs.layout] ? state.prefs.layout : 'set';
     var L = LAYOUTS[key];
+    var isSet = L.type === 'set';
+    $('slot-row').classList.toggle('hidden', isSet);
+    $('slot-hint').classList.toggle('hidden', isSet);
+    $('set-hint').classList.toggle('hidden', !isSet);
+    $('from-opt').classList.toggle('hidden', !isSet);
+    $('guides-text').textContent = isSet ? '宛名の周りに枠線を入れる' : '切り取り線（枠）を印刷する';
+    updatePrintUI();
+    if (isSet) {
+      labelsSheet.className = 'sheet labels layout-set' + (state.prefs.guides ? ' show-guides' : '');
+      labelsSheet.innerHTML = envelopeSetHtml();
+      return;
+    }
     var total = L.cols * L.rows;
     var inner = labelInner();
     var html = '';
@@ -892,8 +1020,7 @@
     panelLabels.classList.toggle('hidden', isLetter);
     frameLetter.classList.toggle('is-inactive', !isLetter);
     frameLabels.classList.toggle('is-inactive', isLetter);
-    printBtn.textContent = isLetter ? '送付状を印刷' : 'ラベルを印刷';
-    $('label-tips').classList.toggle('hidden', isLetter);
+    updatePrintUI();
     document.body.setAttribute('data-print', tab);
     hideError();
     if (focus) (isLetter ? tabLetter : tabLabels).focus();
@@ -943,7 +1070,7 @@
   function hideError(){
     printError.classList.add('hidden');
     printError.innerHTML = '';
-    [userInput, fubiDocInput].forEach(function(el){ el.removeAttribute('aria-invalid'); });
+    [userInput, fubiDocInput, zipInput, addr1Input].forEach(function(el){ el.removeAttribute('aria-invalid'); });
   }
   function showError(problems){
     printError.innerHTML = '印刷する前に、次の項目を入力してください。<ul>' +
@@ -968,20 +1095,43 @@
     }
     return problems;
   }
-  function doPrint(){
+  function envelopeProblems(){
+    var problems = [];
+    var L = currentLayout();
+    if (!state.staff) { problems.push({ text:'担当者（あなた）を選んでください', el:staffGroup }); staffGroup.classList.add('is-invalid'); }
+    if (L.type === 'set') {
+      if (!recipientName()) { problems.push({ text:'ご利用者名（または宛名）を入力してください', el:userInput }); userInput.setAttribute('aria-invalid', 'true'); }
+      if (!cleanText(addr1Input.value)) { problems.push({ text:'封筒（送付用）の住所を入力してください', el:addr1Input }); addr1Input.setAttribute('aria-invalid', 'true'); }
+      if (cleanText(zipInput.value) && zipDigits(zipInput.value).length !== 7) {
+        problems.push({ text:'郵便番号は7桁の数字で入力してください', el:zipInput });
+        zipInput.setAttribute('aria-invalid', 'true');
+      }
+    } else {
+      var off = Object.keys(state.slotsOff).filter(function(k){ return state.slotsOff[k]; }).length;
+      if (off >= L.cols * L.rows) problems.push({ text:'印刷するラベルの位置を1つ以上選んでください', el:null });
+    }
+    return problems;
+  }
+  // mode: 'letter'（送付状） / 'labels'（封筒・ラベル） / 'both'（1枚目に封筒、2枚目に送付状）
+  function doPrint(mode){
     hideError();
-    if (state.tab === 'letter') {
-      var problems = letterProblems();
-      if (problems.length) { showError(problems); return; }
+    var wantLetter = mode === 'letter' || mode === 'both';
+    var wantEnvelope = mode === 'labels' || mode === 'both';
+    var problems = wantLetter ? letterProblems() : [];
+    if (wantEnvelope) {
+      envelopeProblems().forEach(function(p){
+        var dup = problems.some(function(q){ return p.el ? q.el === p.el : q.text === p.text; });
+        if (!dup) problems.push(p);
+      });
+    }
+    if (problems.length) { showError(problems); return; }
+    if (wantLetter) {
       if (!selectedItems().length && !window.confirm('同封する書類が1つも選ばれていません。このまま印刷しますか？')) return;
       if (state.letterOverflow && !window.confirm('文章が多く、A4 1枚に収まっていません。はみ出した部分は印刷されません。このまま印刷しますか？')) return;
-    } else {
-      if (!state.staff) { staffGroup.classList.add('is-invalid'); showError([{ text:'担当者（あなた）を選んでください', el:staffGroup }]); return; }
-      var total = LAYOUTS[state.prefs.layout].cols * LAYOUTS[state.prefs.layout].rows;
-      var off = Object.keys(state.slotsOff).filter(function(k){ return state.slotsOff[k]; }).length;
-      if (off >= total) { showError([{ text:'印刷するラベルの位置を1つ以上選んでください', el:null }]); return; }
     }
-    document.body.setAttribute('data-print', state.tab);
+    if (wantEnvelope && currentLayout().type === 'set' && !zipDigits(zipInput.value) &&
+        !window.confirm('郵便番号が入っていません。このまま封筒を印刷しますか？')) return;
+    document.body.setAttribute('data-print', mode);
     window.print();
   }
 
@@ -989,6 +1139,9 @@
     if (!window.confirm('お客様の入力内容を消去して、新しい送付状を作りますか？（担当者と携帯番号はそのまま残ります）')) return;
     userInput.value = '';
     addresseeInput.value = '';
+    zipInput.value = '';
+    addr1Input.value = '';
+    addr2Input.value = '';
     fubiDocInput.value = DEFAULT_FUBI_DOC;
     fubiDetailInput.value = '';
     extraNotes.value = '';
@@ -1008,11 +1161,16 @@
     save(KEY_MOBILES, mobiles);
     renderAll();
   });
-  [userInput, addresseeInput, fubiDocInput, fubiDetailInput, extraNotes, titleInput, bodyInput].forEach(function(el){
+  [userInput, addresseeInput, zipInput, addr1Input, addr2Input, fubiDocInput, fubiDetailInput, extraNotes, titleInput, bodyInput].forEach(function(el){
     el.addEventListener('input', function(){
       if (el.getAttribute('aria-invalid') && cleanText(el.value)) el.removeAttribute('aria-invalid');
       renderAll();
     });
+  });
+  // 入力し終えたら郵便番号の表記をそろえる（例：８２４００１２ → 824-0012）
+  zipInput.addEventListener('change', function(){
+    if (zipDigits(zipInput.value).length === 7) zipInput.value = formatZip(zipInput.value);
+    renderAll();
   });
   dateInput.addEventListener('change', renderAll);
   dateInput.addEventListener('input', renderAll);
@@ -1071,9 +1229,11 @@
     bodyInput.value = t.body.join('\n');
     renderAll();
   });
-  $('goto-labels').addEventListener('click', function(){
-    setTab('labels', true);
-    if (window.matchMedia('(max-width:900px)').matches) previewBody.scrollIntoView({ behavior:'smooth', block:'start' });
+  Array.prototype.forEach.call(document.querySelectorAll('.goto-env'), function(btn){
+    btn.addEventListener('click', function(){
+      setTab('labels', true);
+      if (window.matchMedia('(max-width:900px)').matches) previewBody.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
   });
   $('clear-btn').addEventListener('click', clearForm);
 
@@ -1087,7 +1247,8 @@
       }
     });
   });
-  printBtn.addEventListener('click', doPrint);
+  printBtn.addEventListener('click', function(){ doPrint(state.tab); });
+  printBothBtn.addEventListener('click', function(){ doPrint('both'); });
 
   labelsSheet.addEventListener('click', function(e){
     var slot = e.target.closest('.label-slot');
@@ -1099,7 +1260,8 @@
   });
   $('slots-all').addEventListener('click', function(){ state.slotsOff = {}; hideError(); renderLabels(); });
   $('slots-none').addEventListener('click', function(){
-    var L = LAYOUTS[state.prefs.layout];
+    var L = currentLayout();
+    if (L.type !== 'grid') return;
     state.slotsOff = {};
     for (var i = 0; i < L.cols * L.rows; i++) state.slotsOff[i] = true;
     renderLabels();
@@ -1122,6 +1284,11 @@
   });
   zaichuCheck.addEventListener('change', function(){
     state.prefs.zaichu = zaichuCheck.checked;
+    save(KEY_PREFS, state.prefs);
+    renderLabels();
+  });
+  fromCheck.addEventListener('change', function(){
+    state.prefs.from = fromCheck.checked;
     save(KEY_PREFS, state.prefs);
     renderLabels();
   });
@@ -1148,12 +1315,14 @@
     if (savedPrefs.suffix === '宛' || savedPrefs.suffix === '行') state.prefs.suffix = savedPrefs.suffix;
     if (typeof savedPrefs.guides === 'boolean') state.prefs.guides = savedPrefs.guides;
     if (typeof savedPrefs.zaichu === 'boolean') state.prefs.zaichu = savedPrefs.zaichu;
+    if (typeof savedPrefs.from === 'boolean') state.prefs.from = savedPrefs.from;
   }
   eraSelect.value = state.prefs.era;
   layoutSelect.value = state.prefs.layout;
   suffixSelect.value = state.prefs.suffix;
   guidesCheck.checked = state.prefs.guides;
   zaichuCheck.checked = state.prefs.zaichu;
+  fromCheck.checked = state.prefs.from;
 
   var savedMobiles = load(KEY_MOBILES);
   if (savedMobiles && typeof savedMobiles === 'object') {

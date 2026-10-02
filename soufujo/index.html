@@ -122,6 +122,7 @@
   .notes-box{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);}
   .notes-box h3{margin:0 0 10px;font-size:15px;color:var(--label);}
   .note-opt{display:flex;align-items:flex-start;gap:9px;margin-bottom:8px;font-size:14px;line-height:1.65;cursor:pointer;}
+  .note-opt.is-red span{color:#c0001a;}
   .note-opt input{width:18px;height:18px;margin:3px 0 0;flex:none;accent-color:var(--blue);}
 
   /* 文面の調整 */
@@ -197,6 +198,7 @@
   .lt-items .empty{color:#9aa5b1;}
   .lt-notes{margin:4mm 0 0 6mm;font-size:calc(11pt * var(--fit));line-height:1.8;}
   .lt-notes p{margin:0;padding-left:1.4em;text-indent:-1.4em;overflow-wrap:anywhere;}
+  .lt-notes p.note-red{color:#d0021b;}
   .lt-end{margin-top:3mm;padding-right:2mm;text-align:right;font-size:calc(11pt * var(--fit));}
   .missing{color:#c0392b;background:#fdecea;border-radius:2px;font-weight:700;}
 
@@ -842,7 +844,7 @@
     if (sig === lastNotesSig) return;
     lastNotesSig = sig;
     autoNotesBox.innerHTML = notes.map(function(n){
-      return '<label class="note-opt"><input type="checkbox" data-key="' + escapeHtml(n.key) + '"' +
+      return '<label class="note-opt' + (n.key === 'copy' ? ' is-red' : '') + '"><input type="checkbox" data-key="' + escapeHtml(n.key) + '"' +
         (state.excludedNotes[n.key] ? '' : ' checked') + '><span>※ ' + escapeHtml(n.text) + '</span></label>';
     }).join('');
     autoNotesEmpty.textContent = notes.length
@@ -910,10 +912,11 @@
         }).join('')
       : '<li class="empty">（同封する書類にチェックを付けてください）</li>';
 
-    var noteLines = notes.filter(function(n){ return !state.excludedNotes[n.key]; })
-      .map(function(n){ return n.text; })
-      .concat(extraNoteLines());
-    $('lt-notes').innerHTML = noteLines.map(function(text){ return '<p>※　' + escapeHtml(text) + '</p>'; }).join('');
+    // お客様控えの注意書き（key: copy）は赤字にする
+    var noteHtml = notes.filter(function(n){ return !state.excludedNotes[n.key]; })
+      .map(function(n){ return '<p' + (n.key === 'copy' ? ' class="note-red"' : '') + '>※　' + escapeHtml(n.text) + '</p>'; })
+      .concat(extraNoteLines().map(function(text){ return '<p>※　' + escapeHtml(text) + '</p>'; }));
+    $('lt-notes').innerHTML = noteHtml.join('');
 
     fitLetter();
   }

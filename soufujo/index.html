@@ -173,8 +173,8 @@
     font-size:calc(18pt * var(--fit));line-height:1.35;font-weight:700;overflow-wrap:anywhere;}
   .lt-to .sama{margin-left:.6em;}
   .lt-date{flex:none;padding-bottom:1.4mm;font-size:calc(11pt * var(--fit));white-space:nowrap;}
-  .lt-from{width:86mm;margin:6mm 0 0 auto;font-size:calc(11pt * var(--fit));line-height:1.6;}
-  .lt-from .kv{display:grid;grid-template-columns:5em minmax(0,1fr);}
+  /* 差出人は1行ずつ右詰め（右端を日付の右端にそろえる） */
+  .lt-from{margin:6mm 0 0;text-align:right;font-size:calc(11pt * var(--fit));line-height:1.6;}
   .lt-title{margin:10mm 0 7mm;text-align:center;font-size:calc(20pt * var(--fit));font-weight:700;letter-spacing:.06em;}
   .lt-body p{margin:0;font-size:calc(11pt * var(--fit));line-height:2;text-indent:1em;overflow-wrap:anywhere;}
   .lt-body p.no-indent{text-indent:0;}
@@ -875,12 +875,12 @@
       '<div>' + escapeHtml(OFFICE.office) + '</div>',
       '<div>〒' + escapeHtml(OFFICE.zip) + '</div>',
       '<div>' + escapeHtml(OFFICE.address) + '</div>',
-      '<div class="kv"><span>営業所長</span><span>' + escapeHtml(OFFICE.manager) + '</span></div>',
-      '<div class="kv"><span>営業担当</span><span>' + (state.staff ? escapeHtml(state.staff) : missingSpan('（担当者）')) + '</span></div>',
-      '<div class="kv"><span>TEL</span><span>' + escapeHtml(OFFICE.tel) + '</span></div>',
-      '<div class="kv"><span>FAX</span><span>' + escapeHtml(OFFICE.fax) + '</span></div>'
+      '<div>営業所長　' + escapeHtml(OFFICE.manager) + '</div>',
+      '<div>営業担当　' + (state.staff ? escapeHtml(state.staff) : missingSpan('（担当者）')) + '</div>',
+      '<div>TEL　' + escapeHtml(OFFICE.tel) + '</div>',
+      '<div>FAX　' + escapeHtml(OFFICE.fax) + '</div>'
     ];
-    if (mobile) from.push('<div class="kv"><span>携帯</span><span>' + escapeHtml(mobile) + '</span></div>');
+    if (mobile) from.push('<div>携帯　' + escapeHtml(mobile) + '</div>');
     $('lt-from').innerHTML = from.join('');
 
     $('lt-title').textContent = cleanText(titleInput.value);

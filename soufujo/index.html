@@ -191,7 +191,7 @@
   .missing{color:#c0392b;background:#fdecea;border-radius:2px;font-weight:700;}
 
   /* ---------- 返送用封筒ラベル（A4） ---------- */
-  .labels{font-family:"Meiryo","メイリオ","Yu Gothic","YuGothic","Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","IPAGothic",sans-serif;}
+  .labels,.mock-paper{font-family:"Meiryo","メイリオ","Yu Gothic","YuGothic","Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","IPAGothic",sans-serif;}
   .label-slot{position:absolute;display:block;margin:0;padding:0;border:0;background:none;color:inherit;
     font:inherit;text-align:left;cursor:pointer;}
   .labels.show-guides .label-slot{border:.25mm dashed #8d99a6;}
@@ -243,6 +243,20 @@
     gap:1.5mm;padding:0 3mm;background:#fff;color:#555;font-size:9pt;white-space:nowrap;}
   .env-cut svg{width:4.2mm;height:4.2mm;}
 
+  /* ---------- 貼り付けイメージ（画面だけ。角2封筒・薄いオレンジ・実寸比） ---------- */
+  .paste-mock{margin:16px 0 0;padding:14px;border-radius:12px;background:#fff;border:1px solid var(--line);}
+  .paste-mock h3{margin:0 0 4px;color:var(--navy);font-size:13.5px;}
+  .mock-row{display:flex;justify-content:center;gap:14px;margin-top:12px;}
+  .mock{margin:0;display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0;}
+  .mock figcaption{color:#3c5068;font-size:12px;font-weight:800;text-align:center;}
+  .mock-env{position:relative;overflow:hidden;border-radius:3px;box-shadow:0 3px 10px rgba(120,72,20,.2);}
+  .mock-env-inner{position:absolute;top:0;left:0;width:240mm;height:332mm;transform-origin:top left;
+    background:#f9d9b6;box-shadow:inset 0 0 0 .8mm #e8bd8f;}
+  .mock-paper{position:absolute;left:15mm;top:30mm;width:210mm;height:148.5mm;background:#fff;color:#111;
+    box-shadow:0 .6mm 2.4mm rgba(90,50,10,.28);overflow:hidden;}
+  .mock-paper .half{top:0 !important;}
+  .mock-fold{position:absolute;left:0;right:0;top:166mm;border-top:.9mm dashed rgba(120,70,20,.55);}
+
   .save-warning-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
     max-width:min(92vw,440px);padding:10px 14px;border:1px solid var(--danger-line);border-radius:9px;
     color:var(--danger);background:var(--danger-bg);font-size:12px;line-height:1.5;
@@ -268,7 +282,7 @@
   @page{size:A4 portrait;margin:0;}
   @media print{
     html,body{margin:0 !important;padding:0 !important;background:#fff !important;min-height:0 !important;}
-    .topbar,.form-col,.preview-head,.status-line,.print-error,.label-options,.print-tips,.save-warning-toast{display:none !important;}
+    .topbar,.form-col,.preview-head,.status-line,.print-error,.label-options,.print-tips,.paste-mock,.save-warning-toast{display:none !important;}
     .app{display:block;max-width:none;margin:0;padding:0;}
     .preview-col{position:static;display:block;max-height:none;overflow:visible;border:0;border-radius:0;background:none;}
     .preview-body{padding:0;overflow:visible;}
@@ -460,6 +474,21 @@
           <div class="lt-end">以上</div>
         </article>
       </div>
+
+      <section class="paste-mock hidden" id="paste-mock" aria-labelledby="paste-mock-title">
+        <h3 id="paste-mock-title">貼り付けイメージ（角2封筒・薄いオレンジ）</h3>
+        <p class="hint">封筒（240×332mm）と、切り取った宛名（210×148.5mm）の実寸比です。上から3cmほど空けて左右の中央に貼ると、切手のスペースが残り、返送用封筒を二つ折りにして同封しても折り目（点線）が宛名の枠にかかりません。</p>
+        <div class="mock-row">
+          <figure class="mock">
+            <div class="mock-env" aria-hidden="true"><div class="mock-env-inner"><div class="mock-paper" id="mock-send"></div></div></div>
+            <figcaption>お送りする封筒（上半分を貼る）</figcaption>
+          </figure>
+          <figure class="mock">
+            <div class="mock-env" aria-hidden="true"><div class="mock-env-inner"><div class="mock-paper" id="mock-return"></div><div class="mock-fold"></div></div></div>
+            <figcaption>返送用封筒（下半分を貼る）</figcaption>
+          </figure>
+        </div>
+      </section>
 
       <p class="print-tips">印刷のしかた：印刷画面で「用紙サイズ：A4」「倍率：100%（実際のサイズ）」「余白：なし（または既定）」を選びます。PDFで保存する場合は、送信先で「PDFに保存」を選んでください。「まとめて印刷」では、1枚目に封筒、2枚目に送付状を続けて印刷します。<span id="label-tips" class="hidden">ラベル用紙に初めて印刷するときは、普通紙に試し印刷し、ラベル用紙と重ねて位置が合うか確かめてください。</span></p>
     </div>
@@ -902,7 +931,7 @@
     '</span>';
   }
 
-  function envelopeSetHtml(){
+  function envelopeHalves(){
     var to = recipientName();
     var zip = formatZip(zipInput.value);
     var addr1 = cleanText(addr1Input.value), addr2 = cleanText(addr2Input.value);
@@ -933,14 +962,26 @@
         '</div>' +
         (zaichu ? '<div class="env-foot">' + zaichu + '</div>' : '') +
       '</div></section>';
+    return { send: send, ret: ret };
+  }
+  function envelopeSetHtml(halves){
     var cut = '<div class="env-cut" aria-hidden="true"><span>' + SCISSORS_SVG + 'キリトリ</span></div>';
-    return send + ret + cut;
+    return halves.send + halves.ret + cut;
+  }
+  function renderPasteMock(halves){
+    var cls = 'mock-paper layout-set' + (state.prefs.guides ? ' show-guides' : '');
+    var send = $('mock-send'), ret = $('mock-return');
+    send.className = cls;
+    ret.className = cls;
+    send.innerHTML = halves.send;
+    ret.innerHTML = halves.ret;
   }
 
   function updatePrintUI(){
     var isSet = currentLayout().type === 'set';
     printBtn.textContent = state.tab === 'letter' ? '送付状を印刷' : (isSet ? '封筒を印刷' : 'ラベルを印刷');
     $('label-tips').classList.toggle('hidden', state.tab === 'letter' || isSet);
+    $('paste-mock').classList.toggle('hidden', !(state.tab === 'labels' && isSet));
   }
 
   function renderLabels(focusSlot){
@@ -954,8 +995,10 @@
     $('guides-text').textContent = isSet ? '宛名の周りに枠線を入れる' : '切り取り線（枠）を印刷する';
     updatePrintUI();
     if (isSet) {
+      var halves = envelopeHalves();
       labelsSheet.className = 'sheet labels layout-set' + (state.prefs.guides ? ' show-guides' : '');
-      labelsSheet.innerHTML = envelopeSetHtml();
+      labelsSheet.innerHTML = envelopeSetHtml(halves);
+      renderPasteMock(halves);
       return;
     }
     var total = L.cols * L.rows;
@@ -1006,6 +1049,19 @@
       frame.style.width = (w * s) + 'px';
       frame.style.height = (h * s) + 'px';
     });
+    // 貼り付けイメージ：封筒2枚を横に並べ、1枚あたり最大280px幅で実寸比のまま縮小する
+    // （非表示の間は寸法を測れないため、封筒の実寸 240×332mm から計算する）
+    var MM = 96 / 25.4;
+    var envW = 240 * MM, envH = 332 * MM;
+    var each = Math.min(280, (avail - 28 - 14) / 2);
+    if (each > 0) {
+      var ms = each / envW;
+      Array.prototype.forEach.call(document.querySelectorAll('.mock-env'), function(env){
+        env.style.width = (envW * ms) + 'px';
+        env.style.height = (envH * ms) + 'px';
+        env.querySelector('.mock-env-inner').style.transform = 'scale(' + ms + ')';
+      });
+    }
   }
 
   // ---------- タブ ----------

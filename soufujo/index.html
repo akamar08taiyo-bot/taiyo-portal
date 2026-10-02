@@ -55,7 +55,14 @@
   .tag-req{margin-left:6px;padding:1px 6px;border-radius:5px;background:#fde8e8;color:#b42318;font-size:10px;}
   .tag-opt{margin-left:6px;padding:1px 6px;border-radius:5px;background:#eef2f8;color:#5b6f86;font-size:10px;}
   .hint{margin:0;color:var(--muted);font-size:11.5px;line-height:1.65;font-weight:500;}
-  .row2{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:8px;}
+  .date-card{padding:12px 18px;}
+  .date-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;}
+  .date-title{flex:none;color:var(--navy);font-size:15px;font-weight:800;}
+  .date-row input,.date-row select{height:42px;padding:0 12px;border:1px solid var(--field);border-radius:9px;
+    background:#fff;font-size:14px;font-weight:500;outline:0;}
+  .date-row input{flex:1 1 150px;min-width:150px;}
+  .date-row select{flex:none;width:100px;}
+  .date-row input:focus,.date-row select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.14);}
 
   /* 担当者チップ */
   .staff-group{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;padding:0;border:0;min-width:0;}
@@ -85,7 +92,7 @@
   .tpl-box strong{display:block;font-size:13.5px;color:var(--navy);}
   .tpl-box small{display:block;margin-top:2px;font-size:11.5px;color:var(--muted);}
   .sub-fields{margin-top:12px;padding:12px;border-radius:10px;background:#f6f8fb;border:1px dashed #cfd9e4;}
-  .env-fields{margin:0 0 12px;}
+  .env-fields{margin:0;}
   .sub-title{margin:0 0 10px;color:var(--navy);font-size:12.5px;font-weight:800;}
   .zip-input{max-width:180px;}
 
@@ -273,7 +280,7 @@
     .brand-row strong{font-size:14.5px;}
     .back-link{padding:0 9px;font-size:10.5px;}
     .card{padding:16px 14px 14px;}
-    .row2{grid-template-columns:minmax(0,1fr) 96px;}
+    .date-card{padding:12px 14px;}
     .preview-head{padding:10px 12px;}
     .head-actions{flex:1 1 100%;}
     .head-actions .btn{flex:1 1 0;padding:0 10px;}
@@ -318,6 +325,17 @@
 <main class="app">
   <!-- ===================== 入力 ===================== -->
   <section class="form-col" aria-label="入力">
+    <div class="card date-card">
+      <div class="date-row">
+        <span class="date-title" aria-hidden="true">日付</span>
+        <input id="date-input" type="date" aria-label="日付" />
+        <select id="era-select" aria-label="日付の表記">
+          <option value="seireki">西暦</option>
+          <option value="wareki">和暦</option>
+        </select>
+      </div>
+    </div>
+
     <div class="card">
       <h2><span class="step">1</span>担当者（あなた）</h2>
       <p class="callout hidden" id="staff-callout">まず、自分の名前をリストから選んでください。次回からはこの端末で自動的に選ばれます。</p>
@@ -351,15 +369,6 @@
           <input id="addr2-input" type="text" autocomplete="off" placeholder="例）〇〇マンション101号" />
         </label>
         <p class="hint">お送りする封筒の宛名（A4上半分）に印刷されます。送付状には載らず、この端末にも保存されません。<button type="button" class="link-btn goto-env">封筒を確認する</button></p>
-      </div>
-      <div class="field"><span class="field-label">日付</span>
-        <div class="row2">
-          <input id="date-input" type="date" aria-label="日付" />
-          <select id="era-select" aria-label="日付の表記">
-            <option value="seireki">西暦</option>
-            <option value="wareki">和暦</option>
-          </select>
-        </div>
       </div>
     </div>
 

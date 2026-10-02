@@ -102,6 +102,10 @@
   .doc-list{display:grid;gap:6px;}
   .doc{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;transition:.12s;}
   .doc.is-on{border-color:#a9c0ef;background:#f5f8ff;}
+  .doc.flash{animation:docflash 1s ease-out;}
+  @keyframes docflash{from{box-shadow:0 0 0 3px rgba(37,99,235,.45);background:#fff7d6;}to{box-shadow:0 0 0 0 rgba(37,99,235,0);}}
+  .doc-divider{display:flex;align-items:center;gap:10px;margin:8px 0 2px;color:var(--muted);font-size:13px;font-weight:700;}
+  .doc-divider::before,.doc-divider::after{content:'';flex:1;height:1px;background:var(--line);}
   .doc-main{display:flex;align-items:flex-start;gap:10px;font-size:15.5px;line-height:1.5;cursor:pointer;}
   .doc-main input[type=checkbox]{width:20px;height:20px;margin:2px 0 0;flex:none;accent-color:var(--blue);cursor:pointer;}
   .doc-name{min-width:0;overflow-wrap:anywhere;}
@@ -397,7 +401,7 @@
 
     <div class="card">
       <h2><span class="step">4</span>同封する書類</h2>
-      <div class="doc-list" id="doc-list"></div>
+      <div class="doc-list" id="doc-list"><div class="doc-divider hidden" id="doc-divider" role="separator">ほかの書類（チェックを付けると上に移ります）</div></div>
       <div class="env-hint hidden" id="env-hint">返送用封筒に貼る宛名は、<button type="button" class="link-btn goto-env" id="goto-labels">「封筒」タブ</button>で、お送りする封筒の宛名と上下セットで印刷できます。</div>
       <div class="notes-box">
         <h3>注意書き（※）</h3>
@@ -533,11 +537,12 @@
   var STAFF = ['久保', '土居', '宮村', '信田', '藤田'];
 
   // 同封書類の候補。ret: 返送してもらう書類か / debit: 口座振替関係の書類か / fixedCopies: 部数が決まっている書類
+  // noCopies: 部数を設定しない書類（基本1部で、送付状にも部数を書かない）
   var DOCS = [
     { id:'keiyaku', label:'福祉用具レンタル契約書', ret:true },
-    { id:'koza', label:'預金口座振替依頼書・自動払込利用申込書', ret:true, debit:true },
-    { id:'koza_fubi', label:'預金口座振替依頼書・自動払込利用申込書（前回提出不備分）', ret:true, debit:true },
-    { id:'koza_new', label:'預金口座振替依頼書・自動払込利用申込書（未記入申込書）', ret:true, debit:true },
+    { id:'koza', label:'預金口座振替依頼書・自動払込利用申込書', ret:true, debit:true, noCopies:true },
+    { id:'koza_fubi', label:'預金口座振替依頼書・自動払込利用申込書（前回提出不備分）', ret:true, debit:true, noCopies:true },
+    { id:'koza_new', label:'預金口座振替依頼書・自動払込利用申込書（未記入申込書）', ret:true, debit:true, noCopies:true },
     { id:'keikaku', label:'福祉用具サービス計画書', ret:true, fixedCopies:2 },
     { id:'other1', other:true },
     { id:'other2', other:true },
@@ -756,7 +761,7 @@
           '<span class="doc-name">' + escapeHtml(doc.label) + '</span></label>';
       }
       var sub = '';
-      if (!doc.envelope) {
+      if (!doc.envelope && !doc.noCopies) {
         sub = '<div class="doc-sub hidden">' +
           (doc.fixedCopies
             ? '<span class="doc-fixed">部数 ' + doc.fixedCopies + '部（固定・うち1部はお客様控え）</span>'
@@ -797,6 +802,60 @@
     });
   }
 
+  // チェックした書類を上にまとめ、その下に「ほかの書類」を並べる。
+  // 動かした行にフォーカスがあれば戻す（文字入力中に行が動かないよう、呼び出しは change 時だけ）
+  function reorderDocs(movedId){
+    var on = DOCS.filter(function(d){ return state.checked[d.id]; });
+    var off = DOCS.filter(function(d){ return !state.checked[d.id]; });
+    var target = on.concat(off).map(function(d){ return d.id; });
+    var rows = Array.prototype.slice.call(docList.querySelectorAll('.doc'));
+    var divider = $('doc-divider');
+    if (rows.map(function(r){ return r.dataset.id; }).join(',') !== target.join(',')) {
+      var active = document.activeElement;
+      var restore = active && docList.contains(active) ? active : null;
+      var sel = null;
+      try { if (restore && typeof restore.selectionStart === 'number') sel = [restore.selectionStart, restore.selectionEnd]; } catch(e){}
+      target.forEach(function(id){ docList.appendChild(docList.querySelector('.doc[data-id="' + id + '"]')); });
+      if (restore) {
+        restore.focus({ preventScroll:true });
+        if (sel) { try { restore.setSelectionRange(sel[0], sel[1]); } catch(e){} }
+      }
+      if (movedId) {
+        var moved = docList.querySelector('.doc[data-id="' + movedId + '"]');
+        if (moved) {
+          moved.classList.remove('flash');
+          void moved.offsetWidth;
+          moved.classList.add('flash');
+          if (moved.scrollIntoView) moved.scrollIntoView({ block:'nearest' });
+        }
+      }
+    }
+    if (on.length && off.length) {
+      docList.insertBefore(divider, docList.querySelector('.doc[data-id="' + off[0].id + '"]'));
+      divider.classList.remove('hidden');
+    } else {
+      divider.classList.add('hidden');
+    }
+  }
+
+  // 「その他」の書類名を入力し終えて別の場所をタップしたとき、そのタップの最中に行が動くと
+  // 押した場所がずれるため、指（マウス）を離して少し待ってから並べ替える
+  var reorderTimer = null, pendingMoveId = null, pointerIsDown = false;
+  document.addEventListener('pointerdown', function(){ pointerIsDown = true; }, true);
+  document.addEventListener('pointerup', function(){ pointerIsDown = false; }, true);
+  document.addEventListener('pointercancel', function(){ pointerIsDown = false; }, true);
+  function reorderSoon(id){
+    pendingMoveId = id;
+    if (reorderTimer) window.clearTimeout(reorderTimer);
+    reorderTimer = window.setTimeout(function tick(){
+      if (pointerIsDown) { reorderTimer = window.setTimeout(tick, 150); return; }
+      reorderTimer = null;
+      var moved = pendingMoveId;
+      pendingMoveId = null;
+      reorderDocs(moved);
+    }, 350);
+  }
+
   function selectedItems(){
     var items = [];
     DOCS.forEach(function(doc){
@@ -807,7 +866,7 @@
         id: doc.id,
         no: items.length + 1,
         label: label,
-        copies: doc.envelope ? 0 : (doc.fixedCopies || state.copies[doc.id] || 0),
+        copies: (doc.envelope || doc.noCopies) ? 0 : (doc.fixedCopies || state.copies[doc.id] || 0),
         ret: doc.other ? state.otherRet[doc.id] !== false : !!doc.ret,
         envelope: !!doc.envelope,
         debit: !!doc.debit
@@ -1123,6 +1182,7 @@
     state.excludedNotes = {};
     lastNotesSig = '';
     syncDocsUI();
+    reorderDocs();
     renderAll();
   }
 
@@ -1281,6 +1341,8 @@
       state.otherRet[id] = e.target.checked;
     }
     syncDocsUI();
+    if (e.target.classList.contains('doc-other-name')) reorderSoon(id);
+    else reorderDocs(e.target.classList.contains('doc-check') ? id : null);
     renderAll();
   });
   docList.addEventListener('input', function(e){

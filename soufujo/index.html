@@ -115,7 +115,6 @@
     color:#2f4258;font-size:14px;}
   .doc-sub label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;}
   .doc-sub input[type=checkbox]{width:18px;height:18px;margin:0;accent-color:var(--blue);}
-  .doc-fixed{padding:5px 9px;border-radius:6px;background:#e8edf4;color:#1f3247;font-weight:700;}
   .mini-select{height:36px;padding:0 8px;border:1px solid var(--field);border-radius:7px;background:#fff;
     font-size:14.5px;outline:0;}
   .env-hint{margin-top:10px;padding:9px 11px;border-radius:8px;background:#eef6ff;border:1px solid #cfe0fb;
@@ -536,14 +535,14 @@
   };
   var STAFF = ['久保', '土居', '宮村', '信田', '藤田'];
 
-  // 同封書類の候補。ret: 返送してもらう書類か / debit: 口座振替関係の書類か / fixedCopies: 部数が決まっている書類
+  // 同封書類の候補。ret: 返送してもらう書類か / debit: 口座振替関係の書類か / defaultCopies: チェックしたときの最初の部数
   // noCopies: 部数を設定しない書類（基本1部で、送付状にも部数を書かない）
   var DOCS = [
-    { id:'keiyaku', label:'福祉用具レンタル契約書', ret:true },
+    { id:'keiyaku', label:'福祉用具レンタル契約書', ret:true, defaultCopies:2 },
     { id:'koza', label:'預金口座振替依頼書・自動払込利用申込書', ret:true, debit:true, noCopies:true },
     { id:'koza_fubi', label:'預金口座振替依頼書・自動払込利用申込書（前回提出不備分）', ret:true, debit:true, noCopies:true },
     { id:'koza_new', label:'預金口座振替依頼書・自動払込利用申込書（未記入申込書）', ret:true, debit:true, noCopies:true },
-    { id:'keikaku', label:'福祉用具サービス計画書', ret:true, fixedCopies:2 },
+    { id:'keikaku', label:'福祉用具サービス計画書', ret:true, defaultCopies:2 },
     { id:'other1', other:true },
     { id:'other2', other:true },
     { id:'envelope', label:'返送用封筒', envelope:true }
@@ -763,11 +762,9 @@
       var sub = '';
       if (!doc.envelope && !doc.noCopies) {
         sub = '<div class="doc-sub hidden">' +
-          (doc.fixedCopies
-            ? '<span class="doc-fixed">部数 ' + doc.fixedCopies + '部（固定・うち1部はお客様控え）</span>'
-            : '<label>部数 <select class="mini-select doc-copies" data-id="' + doc.id + '">' +
-              '<option value="0">記載なし</option><option value="1">1部</option><option value="2">2部</option><option value="3">3部</option>' +
-              '</select></label>') +
+          '<label>部数 <select class="mini-select doc-copies" data-id="' + doc.id + '">' +
+          '<option value="0">記載なし</option><option value="1">1部</option><option value="2">2部</option><option value="3">3部</option>' +
+          '</select></label>' +
           (doc.other ? '<label><input type="checkbox" class="doc-ret" data-id="' + doc.id + '" checked> 返送してもらう書類</label>' : '') +
           '</div>';
       }
@@ -866,7 +863,7 @@
         id: doc.id,
         no: items.length + 1,
         label: label,
-        copies: (doc.envelope || doc.noCopies) ? 0 : (doc.fixedCopies || state.copies[doc.id] || 0),
+        copies: (doc.envelope || doc.noCopies) ? 0 : (state.copies[doc.id] || 0),
         ret: doc.other ? state.otherRet[doc.id] !== false : !!doc.ret,
         envelope: !!doc.envelope,
         debit: !!doc.debit
@@ -1331,7 +1328,11 @@
     if (!id) return;
     if (e.target.classList.contains('doc-check')) {
       state.checked[id] = e.target.checked;
-      if (e.target.checked && !state.copies[id] && TEMPLATES[state.template].docs[id]) state.copies[id] = TEMPLATES[state.template].docs[id];
+      if (e.target.checked && !state.copies[id]) {
+        var doc = DOCS.filter(function(d){ return d.id === id; })[0];
+        var initial = TEMPLATES[state.template].docs[id] || (doc && doc.defaultCopies) || 0;
+        if (initial) state.copies[id] = initial;
+      }
       if (e.target.checked && e.target.closest('.doc').querySelector('.doc-other-name') && !cleanText(state.otherLabels[id])) {
         window.setTimeout(function(){ e.target.closest('.doc').querySelector('.doc-other-name').focus(); }, 0);
       }

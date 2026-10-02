@@ -102,6 +102,7 @@
     color:#54677c;font-size:12px;}
   .doc-sub label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;}
   .doc-sub input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--blue);}
+  .doc-fixed{padding:4px 8px;border-radius:6px;background:#eef2f8;color:#3c5068;font-weight:700;}
   .mini-select{height:30px;padding:0 6px;border:1px solid var(--field);border-radius:7px;background:#fff;
     font-size:12.5px;outline:0;}
   .env-hint{margin-top:10px;padding:9px 11px;border-radius:8px;background:#eef6ff;border:1px solid #cfe0fb;
@@ -516,15 +517,13 @@
   };
   var STAFF = ['久保', '土居', '宮村', '信田', '藤田'];
 
-  // 同封書類の候補。ret: 返送してもらう書類か / debit: 口座振替関係の書類か
+  // 同封書類の候補。ret: 返送してもらう書類か / debit: 口座振替関係の書類か / fixedCopies: 部数が決まっている書類
   var DOCS = [
     { id:'keiyaku', label:'福祉用具レンタル契約書', ret:true },
     { id:'koza', label:'預金口座振替依頼書・自動払込利用申込書', ret:true, debit:true },
     { id:'koza_fubi', label:'預金口座振替依頼書・自動払込利用申込書（前回提出不備分）', ret:true, debit:true },
     { id:'koza_new', label:'預金口座振替依頼書・自動払込利用申込書（未記入申込書）', ret:true, debit:true },
-    { id:'keikaku', label:'福祉用具サービス計画書', ret:true },
-    { id:'juyo', label:'重要事項説明書', ret:false },
-    { id:'kojin', label:'個人情報使用同意書', ret:true },
+    { id:'keikaku', label:'福祉用具サービス計画書', ret:true, fixedCopies:2 },
     { id:'other1', other:true },
     { id:'other2', other:true },
     { id:'envelope', label:'返送用封筒', envelope:true }
@@ -536,7 +535,7 @@
       name: '契約書・口座用紙の記入のお願い',
       desc: '契約書類一式をお送りして、記入・返送をお願いする',
       title: '契約書・口座用紙記入のお願い',
-      docs: { keiyaku:2, koza:0, keikaku:0, envelope:0 },
+      docs: { keiyaku:2, koza:0, keikaku:2, envelope:0 },
       body: [
         GREETING,
         'さて、【利用者名】様分の福祉用具レンタル契約書及び口座用紙につきまして、下記の書類をお送りいたしますので、ご確認・ご記入のうえ、ご返送くださいますようお願い申し上げます。',
@@ -743,9 +742,12 @@
       }
       var sub = '';
       if (!doc.envelope) {
-        sub = '<div class="doc-sub hidden"><label>部数 <select class="mini-select doc-copies" data-id="' + doc.id + '">' +
-          '<option value="0">記載なし</option><option value="1">1部</option><option value="2">2部</option><option value="3">3部</option>' +
-          '</select></label>' +
+        sub = '<div class="doc-sub hidden">' +
+          (doc.fixedCopies
+            ? '<span class="doc-fixed">部数 ' + doc.fixedCopies + '部（固定・うち1部はお客様控え）</span>'
+            : '<label>部数 <select class="mini-select doc-copies" data-id="' + doc.id + '">' +
+              '<option value="0">記載なし</option><option value="1">1部</option><option value="2">2部</option><option value="3">3部</option>' +
+              '</select></label>') +
           (doc.other ? '<label><input type="checkbox" class="doc-ret" data-id="' + doc.id + '" checked> 返送してもらう書類</label>' : '') +
           '</div>';
       }
@@ -790,7 +792,7 @@
         id: doc.id,
         no: items.length + 1,
         label: label,
-        copies: doc.envelope ? 0 : (state.copies[doc.id] || 0),
+        copies: doc.envelope ? 0 : (doc.fixedCopies || state.copies[doc.id] || 0),
         ret: doc.other ? state.otherRet[doc.id] !== false : !!doc.ret,
         envelope: !!doc.envelope,
         debit: !!doc.debit
@@ -801,11 +803,13 @@
 
   function autoNotes(items){
     var notes = [];
-    items.forEach(function(it){
-      if (!it.envelope && it.ret && it.copies >= 2) {
-        notes.push({ key:'copy-' + it.id, text:'(' + it.no + ')の' + it.label + 'のうち1部は、お客様控えとなります。' });
-      }
-    });
+    var keeps = items.filter(function(it){ return !it.envelope && it.ret && it.copies >= 2; });
+    var named = keeps.map(function(it){ return '(' + it.no + ')の' + it.label; });
+    if (keeps.length === 1) {
+      notes.push({ key:'copy', text:named[0] + 'のうち1部は、お客様控えとなります。' });
+    } else if (keeps.length > 1) {
+      notes.push({ key:'copy', text:(keeps.length === 2 ? named.join('と') : named.join('、')) + 'は、それぞれ1部がお客様控えとなります。' });
+    }
     var env = null;
     items.forEach(function(it){ if (it.envelope) env = it; });
     var rets = items.filter(function(it){ return !it.envelope && it.ret; });

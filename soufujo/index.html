@@ -1,0 +1,1172 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0c315e" />
+<title>書類送付状作成｜太陽シルバーサービス 行橋営業所</title>
+<style>
+  :root{
+    --navy:#0c315e; --blue:#2563eb; --blue-deep:#1d4ed8;
+    --line:#dbe2ea; --muted:#6b7c8f; --ink:#0f1f33; --bg:#f3f6fa; --field:#c7d2dd;
+    --danger:#a23a3a; --danger-line:#f0bcbc; --danger-bg:#fff3f3;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);
+    font-family:"Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif;}
+  button,input,select,textarea{font:inherit;color:inherit}
+  .hidden{display:none !important}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
+  /* ---------- 上部バー ---------- */
+  .topbar{height:64px;padding:0 22px;background:#fff;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:14px;}
+  .brand-row{display:flex;align-items:center;gap:11px;min-width:0;}
+  .brand-mark{width:38px;height:38px;border-radius:10px;background:var(--navy);color:#fff;
+    display:grid;place-items:center;font-weight:900;font-size:17px;flex:none;}
+  .brand-row strong{display:block;color:var(--navy);font-size:16px;letter-spacing:-.02em;white-space:nowrap;}
+  .brand-row span{display:block;margin-top:2px;color:var(--muted);font-size:11px;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;}
+  .spacer{flex:1;}
+  .back-link{height:36px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:#fff;
+    color:#516276;font-size:11.5px;font-weight:800;display:inline-flex;align-items:center;
+    text-decoration:none;white-space:nowrap;flex:none;}
+  .back-link:hover{border-color:#aebdcd;color:var(--navy);}
+
+  /* ---------- レイアウト ---------- */
+  .app{display:grid;grid-template-columns:minmax(330px,420px) minmax(0,1fr);gap:20px;
+    max-width:1380px;margin:0 auto;padding:20px 22px 48px;align-items:start;}
+  .form-col{display:grid;gap:14px;min-width:0;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;
+    box-shadow:0 4px 14px rgba(12,49,94,.05);min-width:0;}
+  .card h2{margin:0 0 12px;display:flex;align-items:center;gap:9px;color:var(--navy);font-size:15px;}
+  .step{width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;display:grid;
+    place-items:center;font-size:12px;font-weight:800;flex:none;}
+  .field{display:grid;gap:6px;margin-bottom:12px;color:#54677c;font-size:12px;font-weight:800;}
+  .field:last-child{margin-bottom:0;}
+  .field input,.field select,.field textarea{width:100%;height:42px;padding:0 12px;border:1px solid var(--field);
+    border-radius:9px;background:#fff;font-size:14px;font-weight:500;outline:0;}
+  .field textarea{height:auto;min-height:90px;padding:9px 12px;line-height:1.7;resize:vertical;}
+  .field input:focus,.field select:focus,.field textarea:focus,.doc-other-name:focus,.mini-select:focus{
+    border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.14);}
+  .field [aria-invalid="true"]{border-color:#d46a6a;background:#fffafa;}
+  .tag-req{margin-left:6px;padding:1px 6px;border-radius:5px;background:#fde8e8;color:#b42318;font-size:10px;}
+  .tag-opt{margin-left:6px;padding:1px 6px;border-radius:5px;background:#eef2f8;color:#5b6f86;font-size:10px;}
+  .hint{margin:0;color:var(--muted);font-size:11.5px;line-height:1.65;font-weight:500;}
+  .row2{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:8px;}
+
+  /* 担当者チップ */
+  .staff-group{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;padding:0;border:0;min-width:0;}
+  .chip{position:relative;}
+  .chip input{position:absolute;opacity:0;width:1px;height:1px;}
+  .chip span{display:inline-flex;align-items:center;justify-content:center;min-width:62px;height:40px;
+    padding:0 14px;border:1px solid var(--field);border-radius:999px;background:#fff;color:#3c5068;
+    font-size:14px;font-weight:800;cursor:pointer;transition:.12s;}
+  .chip span:hover{border-color:var(--blue);color:var(--blue);}
+  .chip input:checked + span{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .chip input:focus-visible + span{outline:3px solid rgba(37,99,235,.35);outline-offset:2px;}
+  .staff-group.is-invalid .chip span{border-color:#d46a6a;}
+  .callout{margin:0 0 12px;padding:9px 11px;border-radius:8px;background:#fff8e6;border:1px solid #f3dca4;
+    color:#7a5b12;font-size:12px;line-height:1.6;}
+
+  /* 送付の種類 */
+  .tpl-list{display:grid;gap:8px;margin:0 0 4px;padding:0;border:0;min-width:0;}
+  .tpl{position:relative;display:block;}
+  .tpl input{position:absolute;opacity:0;width:1px;height:1px;}
+  .tpl-box{position:relative;display:block;padding:10px 12px 10px 38px;border:1px solid var(--field);
+    border-radius:10px;cursor:pointer;background:#fff;transition:.12s;}
+  .tpl-box::before{content:'';position:absolute;left:12px;top:13px;width:16px;height:16px;border-radius:50%;
+    border:2px solid #9fb0c2;background:#fff;box-sizing:border-box;}
+  .tpl input:checked + .tpl-box{border-color:var(--blue);background:#f3f7ff;}
+  .tpl input:checked + .tpl-box::before{border-color:var(--blue);background:var(--blue);box-shadow:inset 0 0 0 3px #fff;}
+  .tpl input:focus-visible + .tpl-box{outline:3px solid rgba(37,99,235,.32);outline-offset:2px;}
+  .tpl-box strong{display:block;font-size:13.5px;color:var(--navy);}
+  .tpl-box small{display:block;margin-top:2px;font-size:11.5px;color:var(--muted);}
+  .sub-fields{margin-top:12px;padding:12px;border-radius:10px;background:#f6f8fb;border:1px dashed #cfd9e4;}
+
+  /* 同封書類 */
+  .doc-list{display:grid;gap:6px;}
+  .doc{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;transition:.12s;}
+  .doc.is-on{border-color:#a9c0ef;background:#f5f8ff;}
+  .doc-main{display:flex;align-items:flex-start;gap:9px;font-size:13px;line-height:1.5;cursor:pointer;}
+  .doc-main input[type=checkbox]{width:18px;height:18px;margin:1px 0 0;flex:none;accent-color:var(--blue);cursor:pointer;}
+  .doc-name{min-width:0;overflow-wrap:anywhere;}
+  .doc-other-name{flex:1;min-width:0;height:32px;margin-top:-4px;padding:0 9px;border:1px solid var(--field);
+    border-radius:7px;background:#fff;font-size:13px;outline:0;}
+  .doc-sub{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:7px 0 1px 27px;
+    color:#54677c;font-size:12px;}
+  .doc-sub label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;}
+  .doc-sub input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--blue);}
+  .mini-select{height:30px;padding:0 6px;border:1px solid var(--field);border-radius:7px;background:#fff;
+    font-size:12.5px;outline:0;}
+  .env-hint{margin-top:10px;padding:9px 11px;border-radius:8px;background:#eef6ff;border:1px solid #cfe0fb;
+    color:#24508f;font-size:12px;line-height:1.6;}
+  .link-btn{border:0;background:none;padding:0;color:var(--blue);font-weight:800;cursor:pointer;
+    text-decoration:underline;text-underline-offset:2px;font-size:inherit;}
+  .link-btn:hover{color:var(--blue-deep);}
+  .notes-box{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);}
+  .notes-box h3{margin:0 0 8px;font-size:12.5px;color:#54677c;}
+  .note-opt{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;font-size:12px;line-height:1.6;cursor:pointer;}
+  .note-opt input{width:16px;height:16px;margin:2px 0 0;flex:none;accent-color:var(--blue);}
+
+  /* 文面の調整 */
+  details.card > summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px;
+    color:var(--navy);font-size:15px;font-weight:800;}
+  details.card > summary::-webkit-details-marker{display:none;}
+  details.card > summary::after{content:'▸';margin-left:auto;color:var(--blue);font-size:12px;transition:transform .15s;}
+  details.card[open] > summary::after{transform:rotate(90deg);}
+  details.card[open] > summary{margin-bottom:12px;}
+  .field-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .field-head .link-btn{font-size:11.5px;}
+  #body-input{min-height:210px;}
+
+  .btn{height:42px;padding:0 16px;border-radius:9px;font-size:13.5px;font-weight:800;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+  .btn-primary{border:0;background:var(--blue);color:#fff;}
+  .btn-primary:hover{background:var(--blue-deep);}
+  .btn-ghost{border:1px solid var(--field);background:#fff;color:#3c5068;}
+  .btn-ghost:hover{border-color:#9fb0c2;color:var(--navy);}
+  .btn:focus-visible,.link-btn:focus-visible,.tab:focus-visible,.back-link:focus-visible{
+    outline:3px solid rgba(37,99,235,.35);outline-offset:2px;}
+  .clear-row{display:flex;justify-content:flex-end;}
+
+  /* ---------- プレビュー ---------- */
+  .preview-col{position:sticky;top:14px;min-width:0;max-height:calc(100vh - 28px);display:flex;
+    flex-direction:column;background:#e3e9f0;border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+  .preview-head{flex:none;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;
+    padding:12px 14px;background:#fff;border-bottom:1px solid var(--line);}
+  .tabs{display:inline-flex;padding:3px;border:1px solid var(--line);border-radius:10px;background:#f1f4f8;}
+  .tab{border:0;background:none;padding:8px 13px;border-radius:8px;color:#54677c;font-size:13px;font-weight:800;cursor:pointer;}
+  .tab[aria-selected="true"]{background:var(--navy);color:#fff;}
+  .preview-body{flex:1;min-height:0;overflow:auto;padding:14px 16px 20px;}
+  .status-line{margin:0 0 10px;font-size:12px;color:#40566d;line-height:1.6;}
+  .status-line.is-warn{color:#8a5a00;}
+  .status-line.is-bad{color:var(--danger);font-weight:800;}
+  .print-error{margin:0 0 10px;padding:9px 11px;border:1px solid var(--danger-line);border-radius:8px;
+    color:var(--danger);background:var(--danger-bg);font-size:12px;line-height:1.6;}
+  .print-error ul{margin:4px 0 0;padding-left:18px;}
+  .label-options{margin:0 0 12px;padding:12px;border-radius:10px;background:#fff;border:1px solid var(--line);
+    display:grid;gap:10px;font-size:12.5px;color:#3c5068;}
+  .opt-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;}
+  .opt-row label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;}
+  .opt-row input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--blue);}
+  .opt-row .btn{height:32px;padding:0 10px;font-size:12px;}
+  .sheet-frame{position:relative;margin:0 auto;}
+  .sheet-frame.is-inactive{position:absolute;left:-10000px;top:0;visibility:hidden;}
+  .sheet{position:absolute;top:0;left:0;width:210mm;height:297mm;background:#fff;color:#111;
+    transform-origin:top left;box-shadow:0 6px 22px rgba(12,49,94,.18);overflow:hidden;}
+  .print-tips{margin:12px 0 0;font-size:11.5px;color:#55697d;line-height:1.7;}
+
+  /* ---------- 送付状（A4） ---------- */
+  .letter{--fit:1;padding:17mm 19mm 14mm 21mm;
+    font-family:"Meiryo","メイリオ","Yu Gothic","YuGothic","Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","IPAGothic",sans-serif;}
+  .lt-top{display:flex;justify-content:space-between;align-items:flex-end;gap:8mm;}
+  .lt-to{min-width:70mm;max-width:120mm;padding:0 2mm 1.2mm 1mm;border-bottom:.3mm solid #222;
+    font-size:calc(18pt * var(--fit));line-height:1.35;font-weight:700;overflow-wrap:anywhere;}
+  .lt-to .sama{margin-left:.6em;}
+  .lt-date{flex:none;padding-bottom:1.4mm;font-size:calc(11pt * var(--fit));white-space:nowrap;}
+  .lt-from{width:86mm;margin:6mm 0 0 auto;font-size:calc(11pt * var(--fit));line-height:1.6;}
+  .lt-from .kv{display:grid;grid-template-columns:5em minmax(0,1fr);}
+  .lt-title{margin:10mm 0 7mm;text-align:center;font-size:calc(20pt * var(--fit));font-weight:700;letter-spacing:.06em;}
+  .lt-body p{margin:0;font-size:calc(11pt * var(--fit));line-height:2;text-indent:1em;overflow-wrap:anywhere;}
+  .lt-body p.no-indent{text-indent:0;}
+  .lt-body p.right{text-align:right;text-indent:0;padding-right:2mm;}
+  .lt-ki{margin:6mm 0 4mm;text-align:center;font-size:calc(11.5pt * var(--fit));}
+  .lt-items{margin:0 0 0 6mm;padding:0;list-style:none;font-size:calc(12pt * var(--fit));line-height:1.95;}
+  .lt-items li{display:flex;gap:.8em;}
+  .lt-items .no{flex:none;}
+  .lt-items .copies{margin-left:1.6em;white-space:nowrap;}
+  .lt-items .empty{color:#9aa5b1;}
+  .lt-notes{margin:4mm 0 0 6mm;font-size:calc(11pt * var(--fit));line-height:1.8;}
+  .lt-notes p{margin:0;padding-left:1.4em;text-indent:-1.4em;overflow-wrap:anywhere;}
+  .lt-end{margin-top:3mm;padding-right:2mm;text-align:right;font-size:calc(11pt * var(--fit));}
+  .missing{color:#c0392b;background:#fdecea;border-radius:2px;font-weight:700;}
+
+  /* ---------- 返送用封筒ラベル（A4） ---------- */
+  .labels{font-family:"Meiryo","メイリオ","Yu Gothic","YuGothic","Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","IPAGothic",sans-serif;}
+  .label-slot{position:absolute;display:block;margin:0;padding:0;border:0;background:none;color:inherit;
+    font:inherit;text-align:left;cursor:pointer;}
+  .labels.show-guides .label-slot{border:.25mm dashed #8d99a6;}
+  .label-slot:focus-visible{outline:.8mm solid rgba(37,99,235,.6);outline-offset:-.8mm;}
+  .lbl{position:absolute;inset:0;display:flex;flex-direction:column;padding:4.2mm 5.5mm 3.8mm;overflow:hidden;}
+  .lbl > span{display:block;}
+  .lbl-zip{font-size:10pt;line-height:1.35;}
+  .lbl-addr{font-size:10.5pt;line-height:1.4;}
+  .lbl-org{margin-top:2.2mm;font-size:13pt;line-height:1.3;font-weight:700;}
+  .lbl-org span{display:block;}
+  .lbl-bottom{margin-top:auto;display:flex !important;align-items:flex-end;justify-content:space-between;gap:2mm;}
+  .lbl-zaichu{flex:none;padding:.6mm 1.6mm;border:.35mm solid #d0021b;color:#d0021b;font-size:9.5pt;
+    font-weight:700;letter-spacing:.1em;line-height:1.3;}
+  .lbl-to{margin-left:auto;font-size:16pt;font-weight:700;line-height:1.2;white-space:nowrap;}
+  .lbl-role{margin-right:.5em;font-size:10pt;font-weight:500;}
+  .lbl-suffix{margin-left:.55em;}
+  .layout-a12 .lbl{padding:3.2mm 5.5mm 3mm;}
+  .layout-a12 .lbl-zip{font-size:9pt;}
+  .layout-a12 .lbl-addr{font-size:9.5pt;}
+  .layout-a12 .lbl-org{margin-top:1.4mm;font-size:12pt;}
+  .layout-a12 .lbl-to{font-size:15pt;}
+  .label-slot.is-off .lbl{opacity:.12;}
+  .label-slot.is-off::after{content:'印刷しない';position:absolute;inset:0;display:grid;place-items:center;
+    color:#6b7c8f;font-size:11pt;font-weight:700;letter-spacing:.1em;}
+
+  .save-warning-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
+    max-width:min(92vw,440px);padding:10px 14px;border:1px solid var(--danger-line);border-radius:9px;
+    color:var(--danger);background:var(--danger-bg);font-size:12px;line-height:1.5;
+    box-shadow:0 8px 24px rgba(162,58,58,.14);z-index:50;}
+
+  @media (max-width:900px){
+    .app{grid-template-columns:minmax(0,1fr);padding:14px 16px 40px;gap:16px;}
+    .preview-col{position:static;max-height:none;overflow:visible;}
+    .preview-body{overflow:visible;padding:12px;}
+  }
+  @media (max-width:560px){
+    .topbar{padding:0 12px;gap:10px;}
+    .brand-row strong{font-size:14.5px;}
+    .back-link{padding:0 9px;font-size:10.5px;}
+    .card{padding:16px 14px 14px;}
+    .row2{grid-template-columns:minmax(0,1fr) 96px;}
+    .preview-head{padding:10px 12px;}
+    .preview-head .btn{flex:1 1 100%;}
+  }
+
+  /* ---------- 印刷 ---------- */
+  @page{size:A4 portrait;margin:0;}
+  @media print{
+    html,body{margin:0 !important;padding:0 !important;background:#fff !important;min-height:0 !important;}
+    .topbar,.form-col,.preview-head,.status-line,.print-error,.label-options,.print-tips,.save-warning-toast{display:none !important;}
+    .app{display:block;max-width:none;margin:0;padding:0;}
+    .preview-col{position:static;display:block;max-height:none;overflow:visible;border:0;border-radius:0;background:none;}
+    .preview-body{padding:0;overflow:visible;}
+    .sheet-frame{display:none !important;}
+    body[data-print="letter"] #frame-letter,
+    body[data-print="labels"] #frame-labels{display:block !important;position:static !important;
+      visibility:visible !important;width:210mm !important;height:296.5mm !important;margin:0 !important;}
+    .sheet{position:static !important;transform:none !important;box-shadow:none !important;height:296.5mm;}
+    .label-slot.is-off{visibility:hidden;}
+    .missing{color:inherit;background:none;}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  }
+</style>
+</head>
+<body data-print="letter">
+
+<header class="topbar">
+  <div class="brand-row">
+    <div class="brand-mark">太</div>
+    <div><strong>書類送付状作成</strong><span>太陽シルバーサービス㈱ 行橋営業所</span></div>
+  </div>
+  <div class="spacer"></div>
+  <a class="back-link" href="../">ポータルへ戻る</a>
+</header>
+
+<noscript><p style="margin:16px;padding:12px;border:1px solid #f0bcbc;background:#fff3f3;color:#a23a3a">このアプリはJavaScriptを使用します。ブラウザの設定でJavaScriptを有効にしてください。</p></noscript>
+
+<main class="app">
+  <!-- ===================== 入力 ===================== -->
+  <section class="form-col" aria-label="入力">
+    <div class="card">
+      <h2><span class="step">1</span>担当者（あなた）</h2>
+      <p class="callout hidden" id="staff-callout">まず、自分の名前をリストから選んでください。次回からはこの端末で自動的に選ばれます。</p>
+      <fieldset class="staff-group" id="staff-group">
+        <legend class="sr-only">担当者を選択</legend>
+      </fieldset>
+      <label class="field"><span class="field-label">携帯番号<span class="tag-opt">任意</span></span>
+        <input id="mobile-input" type="tel" inputmode="tel" autocomplete="off" placeholder="例）080-0000-0000" />
+      </label>
+      <p class="hint" id="mobile-hint">携帯番号は担当者ごとにこの端末へ保存され、送付状の差出人欄に載ります。空欄なら載りません。</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="step">2</span>お客様</h2>
+      <label class="field"><span class="field-label">ご利用者名<span class="tag-req">必須</span></span>
+        <input id="user-input" type="text" autocomplete="off" placeholder="例）山田 太郎" />
+      </label>
+      <label class="field"><span class="field-label">宛名（送付先）<span class="tag-opt">任意</span></span>
+        <input id="addressee-input" type="text" autocomplete="off" placeholder="空欄ならご利用者名あてになります" />
+      </label>
+      <p class="hint" style="margin:-4px 0 12px">ご家族など、ご利用者様以外にお送りするときだけ入力します。「様」は自動で付きます。</p>
+      <div class="field"><span class="field-label">日付</span>
+        <div class="row2">
+          <input id="date-input" type="date" aria-label="日付" />
+          <select id="era-select" aria-label="日付の表記">
+            <option value="seireki">西暦</option>
+            <option value="wareki">和暦</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="step">3</span>送付の種類</h2>
+      <fieldset class="tpl-list" id="tpl-list">
+        <legend class="sr-only">送付の種類を選択</legend>
+      </fieldset>
+      <div class="sub-fields hidden" id="resend-fields">
+        <label class="field"><span class="field-label">不備があった書類<span class="tag-req">必須</span></span>
+          <input id="fubi-doc-input" type="text" list="doc-names" autocomplete="off" />
+        </label>
+        <datalist id="doc-names"></datalist>
+        <label class="field"><span class="field-label">不備の内容<span class="tag-opt">任意</span></span>
+          <input id="fubi-detail-input" type="text" autocomplete="off" placeholder="例）お届け印の相違" />
+        </label>
+        <p class="hint">入力すると本文に「一部不備（お届け印の相違）がございました」のように入ります。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="step">4</span>同封する書類</h2>
+      <div class="doc-list" id="doc-list"></div>
+      <div class="env-hint hidden" id="env-hint">返送用封筒に貼る宛名ラベルは、<button type="button" class="link-btn" id="goto-labels">「返送用封筒ラベル」タブ</button>から印刷できます。</div>
+      <div class="notes-box">
+        <h3>注意書き（※）</h3>
+        <div id="auto-notes"></div>
+        <p class="hint" id="auto-notes-empty">選んだ書類に合わせて自動で入ります。不要なものはチェックを外してください。</p>
+        <label class="field" style="margin-top:10px"><span class="field-label">追加の注意書き<span class="tag-opt">任意・1行に1つ</span></span>
+          <textarea id="extra-notes" rows="2" placeholder="例）ご不明な点は担当までお気軽にお電話ください。"></textarea>
+        </label>
+      </div>
+    </div>
+
+    <details class="card" id="text-card">
+      <summary><span class="step">5</span>件名・本文を調整する<span class="tag-opt" style="font-weight:700">任意</span></summary>
+      <label class="field"><span class="field-label">件名</span>
+        <input id="title-input" type="text" autocomplete="off" />
+      </label>
+      <div class="field">
+        <div class="field-head"><label for="body-input">本文</label><button type="button" class="link-btn" id="reset-text">送付の種類の文面に戻す</button></div>
+        <textarea id="body-input" spellcheck="false"></textarea>
+      </div>
+      <p class="hint">【利用者名】【不備書類】【不備内容】は入力欄の内容に自動で置き換わります。「敬具」の行は右寄せになります。</p>
+    </details>
+
+    <div class="clear-row">
+      <button type="button" class="btn btn-ghost" id="clear-btn">入力をクリアして次の送付状へ</button>
+    </div>
+  </section>
+
+  <!-- ===================== プレビュー ===================== -->
+  <section class="preview-col" aria-label="プレビューと印刷">
+    <div class="preview-head">
+      <div class="tabs" role="tablist" aria-label="プレビューの切り替え">
+        <button type="button" class="tab" role="tab" id="tab-letter" aria-controls="panel-letter" aria-selected="true">送付状</button>
+        <button type="button" class="tab" role="tab" id="tab-labels" aria-controls="panel-labels" aria-selected="false" tabindex="-1">返送用封筒ラベル</button>
+      </div>
+      <button type="button" class="btn btn-primary" id="print-btn">送付状を印刷</button>
+    </div>
+    <div class="preview-body" id="preview-body">
+      <div class="print-error hidden" id="print-error" role="alert"></div>
+
+      <div id="panel-letter" role="tabpanel" aria-labelledby="tab-letter">
+        <p class="status-line" id="fit-status" aria-live="polite"></p>
+      </div>
+      <div id="panel-labels" role="tabpanel" aria-labelledby="tab-labels" class="hidden">
+        <div class="label-options">
+          <div class="opt-row">
+            <label>用紙
+              <select class="mini-select" id="layout-select"></select>
+            </label>
+            <label>名前のあと
+              <select class="mini-select" id="suffix-select">
+                <option value="宛">宛</option>
+                <option value="行">行</option>
+              </select>
+            </label>
+          </div>
+          <div class="opt-row">
+            <label><input type="checkbox" id="guides-check" /> 切り取り線（枠）を印刷する</label>
+            <label><input type="checkbox" id="zaichu-check" /> 「書類在中」を入れる</label>
+          </div>
+          <div class="opt-row">
+            <span id="slot-count" aria-live="polite"></span>
+            <button type="button" class="btn btn-ghost" id="slots-all">すべて印刷する</button>
+            <button type="button" class="btn btn-ghost" id="slots-none">すべて外す</button>
+          </div>
+          <p class="hint">下のラベルをクリックすると、その位置を「印刷する／しない」に切り替えられます（使いかけのラベル用紙に便利です）。</p>
+        </div>
+      </div>
+
+      <div class="sheet-frame" id="frame-letter">
+        <article class="sheet letter" id="letter" aria-label="送付状のプレビュー">
+          <div class="lt-top">
+            <div class="lt-to" id="lt-to"></div>
+            <div class="lt-date" id="lt-date"></div>
+          </div>
+          <div class="lt-from" id="lt-from"></div>
+          <h1 class="lt-title" id="lt-title"></h1>
+          <div class="lt-body" id="lt-body"></div>
+          <div class="lt-ki">記</div>
+          <ol class="lt-items" id="lt-items"></ol>
+          <div class="lt-notes" id="lt-notes"></div>
+          <div class="lt-end">以上</div>
+        </article>
+      </div>
+      <div class="sheet-frame is-inactive" id="frame-labels">
+        <div class="sheet labels" id="labels-sheet" role="group" aria-label="返送用封筒ラベルのプレビュー"></div>
+      </div>
+
+      <p class="print-tips">印刷のしかた：印刷画面で「用紙サイズ：A4」「倍率：100%（実際のサイズ）」「余白：なし（または既定）」を選びます。PDFで保存する場合は、送信先で「PDFに保存」を選んでください。<span id="label-tips" class="hidden">ラベル用紙に初めて印刷するときは、普通紙に試し印刷し、ラベル用紙と重ねて位置が合うか確かめてください。</span></p>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  var KEY_STAFF = 'taiyo_soufujo_staff';
+  var KEY_MOBILES = 'taiyo_soufujo_mobiles';
+  var KEY_PREFS = 'taiyo_soufujo_prefs';
+
+  // 発行元（差出人欄・返送用ラベル）の固定情報
+  var OFFICE = {
+    company: '太陽シルバーサービス株式会社',
+    companyShort: '太陽シルバーサービス（株）',
+    office: '行橋営業所',
+    zip: '824-0043',
+    address: '福岡県行橋市大字流末1327番地',
+    manager: '久保　匠史',
+    tel: '0930-26-9640',
+    fax: '0930-26-9641'
+  };
+  var STAFF = ['久保', '土居', '宮村', '信田', '藤田'];
+
+  // 同封書類の候補。ret: 返送してもらう書類か / debit: 口座振替関係の書類か
+  var DOCS = [
+    { id:'keiyaku', label:'福祉用具レンタル契約書', ret:true },
+    { id:'koza', label:'預金口座振替依頼書・自動払込利用申込書', ret:true, debit:true },
+    { id:'koza_fubi', label:'預金口座振替依頼書・自動払込利用申込書（前回提出不備分）', ret:true, debit:true },
+    { id:'koza_new', label:'預金口座振替依頼書・自動払込利用申込書（未記入申込書）', ret:true, debit:true },
+    { id:'keikaku', label:'福祉用具サービス計画書', ret:true },
+    { id:'juyo', label:'重要事項説明書', ret:false },
+    { id:'kojin', label:'個人情報使用同意書', ret:true },
+    { id:'other1', other:true },
+    { id:'other2', other:true },
+    { id:'envelope', label:'返送用封筒', envelope:true }
+  ];
+
+  var GREETING = '拝啓　平素は格別のご愛顧を賜り、誠にありがとうございます。';
+  var TEMPLATES = {
+    contract: {
+      name: '契約書・口座用紙の記入のお願い',
+      desc: '契約書類一式をお送りして、記入・返送をお願いする',
+      title: '契約書・口座用紙記入のお願い',
+      docs: { keiyaku:2, koza:0, keikaku:0, envelope:0 },
+      body: [
+        GREETING,
+        'さて、【利用者名】様分の福祉用具レンタル契約書及び口座用紙につきまして、下記の書類をお送りいたしますので、ご確認・ご記入のうえ、ご返送くださいますようお願い申し上げます。',
+        'また、記入方法等ご不明な点がございましたら、上記までお問い合わせください。',
+        '大変お手数ではございますが、よろしくお願い申し上げます。',
+        '敬具'
+      ]
+    },
+    resend: {
+      name: '不備書類の再送付のお願い',
+      desc: 'ご提出いただいた書類に不備があり、再度お送りする',
+      title: '書類再送付のお願い',
+      docs: { koza_fubi:0, koza_new:0 },
+      body: [
+        GREETING,
+        '先日弊社よりご郵送差し上げました、【利用者名】様分の福祉用具レンタル「【不備書類】」のうち、一部不備【不備内容】がございました。',
+        'つきましては、下記の書類をお送りいたしますので、ご確認のうえ、ご返送くださいますようお願い申し上げます。',
+        'また、記入方法等ご不明な点がございましたら、上記までお問い合わせください。',
+        '大変お手数ではございますが、よろしくお願い申し上げます。',
+        '敬具'
+      ]
+    },
+    general: {
+      name: '書類送付のご案内',
+      desc: '書類をお送りするだけのとき（汎用）',
+      title: '書類送付のご案内',
+      docs: {},
+      body: [
+        GREETING,
+        'さて、【利用者名】様分の下記の書類をお送りいたしますので、ご確認くださいますようお願い申し上げます。',
+        'ご不明な点がございましたら、上記までお問い合わせください。',
+        '今後ともよろしくお願い申し上げます。',
+        '敬具'
+      ]
+    }
+  };
+  var DEFAULT_FUBI_DOC = '預金口座振替依頼書・自動払込利用申込書';
+
+  // 一般的なA4ラベル用紙の寸法（mm）
+  var LAYOUTS = {
+    a10: { name:'A4 10面（86.4×50.8mm）', cols:2, rows:5, w:86.4, h:50.8, top:21.5, left:18.6 },
+    a12: { name:'A4 12面（86.4×42.3mm）', cols:2, rows:6, w:86.4, h:42.3, top:21.6, left:18.6 }
+  };
+
+  var state = {
+    staff: '',
+    template: 'contract',
+    checked: {},
+    copies: {},
+    otherLabels: {},
+    otherRet: {},
+    excludedNotes: {},
+    slotsOff: {},
+    tab: 'letter',
+    letterOverflow: false,
+    prefs: { era:'seireki', layout:'a10', suffix:'宛', guides:true, zaichu:false }
+  };
+  var mobiles = {};
+  var memory = {};
+
+  function $(id){ return document.getElementById(id); }
+  var staffGroup = $('staff-group'), staffCallout = $('staff-callout');
+  var mobileInput = $('mobile-input'), mobileHint = $('mobile-hint');
+  var userInput = $('user-input'), addresseeInput = $('addressee-input');
+  var dateInput = $('date-input'), eraSelect = $('era-select');
+  var tplList = $('tpl-list'), resendFields = $('resend-fields');
+  var fubiDocInput = $('fubi-doc-input'), fubiDetailInput = $('fubi-detail-input');
+  var docList = $('doc-list'), envHint = $('env-hint');
+  var autoNotesBox = $('auto-notes'), autoNotesEmpty = $('auto-notes-empty'), extraNotes = $('extra-notes');
+  var titleInput = $('title-input'), bodyInput = $('body-input');
+  var printBtn = $('print-btn'), printError = $('print-error'), fitStatus = $('fit-status');
+  var tabLetter = $('tab-letter'), tabLabels = $('tab-labels');
+  var panelLetter = $('panel-letter'), panelLabels = $('panel-labels');
+  var frameLetter = $('frame-letter'), frameLabels = $('frame-labels');
+  var letter = $('letter'), labelsSheet = $('labels-sheet'), previewBody = $('preview-body');
+  var layoutSelect = $('layout-select'), suffixSelect = $('suffix-select');
+  var guidesCheck = $('guides-check'), zaichuCheck = $('zaichu-check'), slotCount = $('slot-count');
+
+  // ---------- 保存（失敗しても操作は続けられるよう、警告だけ出す） ----------
+  var toastTimer = null;
+  function showToast(message){
+    var el = $('save-warning-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'save-warning-toast';
+      el.className = 'save-warning-toast hidden';
+      el.setAttribute('role', 'alert');
+      document.body.appendChild(el);
+    }
+    el.textContent = message;
+    el.classList.remove('hidden');
+    if (toastTimer) window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function(){ el.classList.add('hidden'); }, 6000);
+  }
+  function load(key){
+    if (Object.prototype.hasOwnProperty.call(memory, key)) return memory[key];
+    try { return JSON.parse(localStorage.getItem(key)); } catch(e){ return null; }
+  }
+  var warned = false;
+  function save(key, value){
+    memory[key] = value;
+    try { localStorage.setItem(key, JSON.stringify(value)); }
+    catch(e){
+      if (!warned) {
+        warned = true;
+        showToast('設定をこの端末に保存できませんでした。この画面ではそのまま使えますが、次回は選び直しが必要です（プライベートモードや空き容量をご確認ください）。');
+      }
+    }
+  }
+
+  // ---------- 文字の整形 ----------
+  function escapeHtml(value){
+    return String(value).replace(/[&<>"']/g, function(ch){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch];
+    });
+  }
+  function cleanText(value){
+    return String(value || '').replace(/[\s　]+/g, ' ').trim();
+  }
+  // 「山田 太郎様」→「山田　太郎」（空白を全角にそろえ、末尾の敬称は外す。様は送付状側で付ける）
+  function personName(value){
+    return cleanText(value).replace(/\s*(様|さま|殿)$/, '').trim().replace(/ /g, '　');
+  }
+  function pad2(n){ return (n < 10 ? '0' : '') + n; }
+  function todayValue(){
+    var d = new Date();
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+  function formatDate(value, era){
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || '');
+    if (!m) return '';
+    var y = +m[1], mo = +m[2], d = +m[3];
+    if (era === 'wareki') {
+      var ymd = y * 10000 + mo * 100 + d;
+      var name, base;
+      if (ymd >= 20190501) { name = '令和'; base = 2018; }
+      else if (ymd >= 19890108) { name = '平成'; base = 1988; }
+      else { name = '昭和'; base = 1925; }
+      var ey = y - base;
+      return name + (ey === 1 ? '元' : ey) + '年' + mo + '月' + d + '日';
+    }
+    return y + '年' + mo + '月' + d + '日';
+  }
+
+  // ---------- 画面の組み立て ----------
+  function buildStaff(){
+    STAFF.forEach(function(name){
+      var label = document.createElement('label');
+      label.className = 'chip';
+      label.innerHTML = '<input type="radio" name="staff" value="' + escapeHtml(name) + '"><span>' + escapeHtml(name) + '</span>';
+      staffGroup.appendChild(label);
+    });
+  }
+  function buildTemplates(){
+    Object.keys(TEMPLATES).forEach(function(key){
+      var t = TEMPLATES[key];
+      var label = document.createElement('label');
+      label.className = 'tpl';
+      label.innerHTML = '<input type="radio" name="template" value="' + key + '">' +
+        '<span class="tpl-box"><strong>' + escapeHtml(t.name) + '</strong><small>' + escapeHtml(t.desc) + '</small></span>';
+      tplList.appendChild(label);
+    });
+    var dl = $('doc-names');
+    DOCS.forEach(function(doc){
+      if (doc.other || doc.envelope) return;
+      var opt = document.createElement('option');
+      opt.value = doc.label;
+      dl.appendChild(opt);
+    });
+  }
+  function buildDocs(){
+    DOCS.forEach(function(doc){
+      var row = document.createElement('div');
+      row.className = 'doc';
+      row.dataset.id = doc.id;
+      var main;
+      if (doc.other) {
+        main = '<div class="doc-main"><input type="checkbox" class="doc-check" data-id="' + doc.id + '" aria-label="その他の書類を同封する">' +
+          '<input type="text" class="doc-other-name" data-id="' + doc.id + '" placeholder="その他の書類名を入力" aria-label="その他の書類名" autocomplete="off"></div>';
+      } else {
+        main = '<label class="doc-main"><input type="checkbox" class="doc-check" data-id="' + doc.id + '">' +
+          '<span class="doc-name">' + escapeHtml(doc.label) + '</span></label>';
+      }
+      var sub = '';
+      if (!doc.envelope) {
+        sub = '<div class="doc-sub hidden"><label>部数 <select class="mini-select doc-copies" data-id="' + doc.id + '">' +
+          '<option value="0">記載なし</option><option value="1">1部</option><option value="2">2部</option><option value="3">3部</option>' +
+          '</select></label>' +
+          (doc.other ? '<label><input type="checkbox" class="doc-ret" data-id="' + doc.id + '" checked> 返送してもらう書類</label>' : '') +
+          '</div>';
+      }
+      row.innerHTML = main + sub;
+      docList.appendChild(row);
+    });
+  }
+  function buildLayouts(){
+    Object.keys(LAYOUTS).forEach(function(key){
+      var opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = LAYOUTS[key].name;
+      layoutSelect.appendChild(opt);
+    });
+  }
+
+  // ---------- 状態 → 画面 ----------
+  function syncDocsUI(){
+    Array.prototype.forEach.call(docList.querySelectorAll('.doc'), function(row){
+      var id = row.dataset.id;
+      var on = !!state.checked[id];
+      row.classList.toggle('is-on', on);
+      row.querySelector('.doc-check').checked = on;
+      var sub = row.querySelector('.doc-sub');
+      if (sub) sub.classList.toggle('hidden', !on);
+      var copies = row.querySelector('.doc-copies');
+      if (copies) copies.value = String(state.copies[id] || 0);
+      var name = row.querySelector('.doc-other-name');
+      if (name && name.value !== (state.otherLabels[id] || '')) name.value = state.otherLabels[id] || '';
+      var ret = row.querySelector('.doc-ret');
+      if (ret) ret.checked = state.otherRet[id] !== false;
+    });
+  }
+
+  function selectedItems(){
+    var items = [];
+    DOCS.forEach(function(doc){
+      if (!state.checked[doc.id]) return;
+      var label = doc.other ? cleanText(state.otherLabels[doc.id]) : doc.label;
+      if (!label) return;
+      items.push({
+        id: doc.id,
+        no: items.length + 1,
+        label: label,
+        copies: doc.envelope ? 0 : (state.copies[doc.id] || 0),
+        ret: doc.other ? state.otherRet[doc.id] !== false : !!doc.ret,
+        envelope: !!doc.envelope,
+        debit: !!doc.debit
+      });
+    });
+    return items;
+  }
+
+  function autoNotes(items){
+    var notes = [];
+    items.forEach(function(it){
+      if (!it.envelope && it.ret && it.copies >= 2) {
+        notes.push({ key:'copy-' + it.id, text:'(' + it.no + ')の' + it.label + 'のうち1部は、お客様控えとなります。' });
+      }
+    });
+    var env = null;
+    items.forEach(function(it){ if (it.envelope) env = it; });
+    var rets = items.filter(function(it){ return !it.envelope && it.ret; });
+    if (env && rets.length) {
+      notes.push({ key:'return', text:'(' + env.no + ')の返送用封筒に' +
+        rets.map(function(it){ return '(' + it.no + ')'; }).join('') + 'の書類を同封のうえ、ご返送ください。' });
+    }
+    if (items.some(function(it){ return it.debit; })) {
+      notes.push({ key:'debit', text:'尚、引き落としの手続きに時間を要する為、引き落としが間に合わない場合には、2か月分の引き落としをまとめておこなう場合がございます。' });
+    }
+    return notes;
+  }
+
+  var lastNotesSig = '';
+  function renderNotesUI(notes){
+    var sig = JSON.stringify(notes);
+    if (sig === lastNotesSig) return;
+    lastNotesSig = sig;
+    autoNotesBox.innerHTML = notes.map(function(n){
+      return '<label class="note-opt"><input type="checkbox" data-key="' + escapeHtml(n.key) + '"' +
+        (state.excludedNotes[n.key] ? '' : ' checked') + '><span>※ ' + escapeHtml(n.text) + '</span></label>';
+    }).join('');
+    autoNotesEmpty.textContent = notes.length
+      ? '不要なものはチェックを外すと送付状から消えます。'
+      : '選んだ書類に合わせて自動で入ります（今はありません）。';
+  }
+
+  function extraNoteLines(){
+    return String(extraNotes.value || '').split(/\r?\n/).map(function(line){
+      return line.replace(/^[\s　]*※?[\s　]*/, '').trim();
+    }).filter(Boolean);
+  }
+
+  function missingSpan(text){ return '<span class="missing">' + escapeHtml(text) + '</span>'; }
+
+  function renderBody(){
+    var user = personName(userInput.value);
+    var fubiDoc = cleanText(fubiDocInput.value);
+    var fubiDetail = cleanText(fubiDetailInput.value);
+    return String(bodyInput.value || '').split(/\r?\n/).map(function(raw){
+      var line = raw.replace(/^[\s　]+/, '').replace(/[\s　]+$/, '');
+      if (!line) return '<p class="no-indent">&nbsp;</p>';
+      var cls = '';
+      if (/^(敬具|以上|草々|かしこ)$/.test(line)) cls = 'right';
+      else if (/^(拝啓|謹啓|前略)/.test(line)) cls = 'no-indent';
+      var html = escapeHtml(line)
+        .split('【利用者名】').join(user ? escapeHtml(user) : missingSpan('（利用者名）'))
+        .split('【不備書類】').join(fubiDoc ? escapeHtml(fubiDoc) : missingSpan('（不備書類）'))
+        .split('【不備内容】').join(fubiDetail ? '（' + escapeHtml(fubiDetail) + '）' : '');
+      return '<p' + (cls ? ' class="' + cls + '"' : '') + '>' + html + '</p>';
+    }).join('');
+  }
+
+  function currentMobile(){
+    return state.staff ? cleanText(mobiles[state.staff]) : '';
+  }
+
+  function renderLetter(items, notes){
+    var user = personName(userInput.value);
+    var to = personName(addresseeInput.value) || user;
+    var honorific = /御中$/.test(to) ? '' : '<span class="sama">様</span>';
+    $('lt-to').innerHTML = (to ? escapeHtml(to) : missingSpan('（宛名）')) + honorific;
+    $('lt-date').textContent = formatDate(dateInput.value, state.prefs.era);
+
+    var mobile = currentMobile();
+    var from = [
+      '<div>' + escapeHtml(OFFICE.company) + '</div>',
+      '<div>' + escapeHtml(OFFICE.office) + '</div>',
+      '<div>〒' + escapeHtml(OFFICE.zip) + '</div>',
+      '<div>' + escapeHtml(OFFICE.address) + '</div>',
+      '<div class="kv"><span>営業所長</span><span>' + escapeHtml(OFFICE.manager) + '</span></div>',
+      '<div class="kv"><span>営業担当</span><span>' + (state.staff ? escapeHtml(state.staff) : missingSpan('（担当者）')) + '</span></div>',
+      '<div class="kv"><span>TEL</span><span>' + escapeHtml(OFFICE.tel) + '</span></div>',
+      '<div class="kv"><span>FAX</span><span>' + escapeHtml(OFFICE.fax) + '</span></div>'
+    ];
+    if (mobile) from.push('<div class="kv"><span>携帯</span><span>' + escapeHtml(mobile) + '</span></div>');
+    $('lt-from').innerHTML = from.join('');
+
+    $('lt-title').textContent = cleanText(titleInput.value);
+    $('lt-body').innerHTML = renderBody();
+
+    $('lt-items').innerHTML = items.length
+      ? items.map(function(it){
+          return '<li><span class="no">(' + it.no + ')</span><span>' + escapeHtml(it.label) +
+            (it.copies ? '<span class="copies">' + it.copies + '部</span>' : '') + '</span></li>';
+        }).join('')
+      : '<li class="empty">（同封する書類にチェックを付けてください）</li>';
+
+    var noteLines = notes.filter(function(n){ return !state.excludedNotes[n.key]; })
+      .map(function(n){ return n.text; })
+      .concat(extraNoteLines());
+    $('lt-notes').innerHTML = noteLines.map(function(text){ return '<p>※　' + escapeHtml(text) + '</p>'; }).join('');
+
+    fitLetter();
+  }
+
+  // 文章が多いときは文字を少しずつ小さくして、A4 1枚に収める
+  function fitLetter(){
+    var fit = 1;
+    letter.style.setProperty('--fit', '1');
+    while (letter.scrollHeight > letter.clientHeight + 1 && fit > 0.8) {
+      fit = Math.round((fit - 0.02) * 100) / 100;
+      letter.style.setProperty('--fit', String(fit));
+    }
+    state.letterOverflow = letter.scrollHeight > letter.clientHeight + 1;
+    fitStatus.className = 'status-line' + (state.letterOverflow ? ' is-bad' : (fit < 1 ? ' is-warn' : ''));
+    fitStatus.textContent = state.letterOverflow
+      ? '文章が多く、A4 1枚に収まりません。注意書きや本文を減らしてください。'
+      : (fit < 1 ? 'A4 1枚に収まるよう、文字を少し小さくしています（' + Math.round(fit * 100) + '%）。'
+                 : 'A4 1枚に収まっています。');
+  }
+
+  function labelInner(){
+    var to = state.staff ? escapeHtml(state.staff) : missingSpan('担当者');
+    return '<span class="lbl">' +
+      '<span class="lbl-zip">〒' + escapeHtml(OFFICE.zip) + '</span>' +
+      '<span class="lbl-addr">' + escapeHtml(OFFICE.address) + '</span>' +
+      '<span class="lbl-org"><span>' + escapeHtml(OFFICE.companyShort) + '</span><span>' + escapeHtml(OFFICE.office) + '</span></span>' +
+      '<span class="lbl-bottom">' +
+        (state.prefs.zaichu ? '<span class="lbl-zaichu">書類在中</span>' : '') +
+        '<span class="lbl-to"><span class="lbl-role">営業担当</span>' + to +
+        '<span class="lbl-suffix">' + escapeHtml(state.prefs.suffix) + '</span></span>' +
+      '</span>' +
+    '</span>';
+  }
+
+  function renderLabels(focusSlot){
+    var key = LAYOUTS[state.prefs.layout] ? state.prefs.layout : 'a10';
+    var L = LAYOUTS[key];
+    var total = L.cols * L.rows;
+    var inner = labelInner();
+    var html = '';
+    var on = 0;
+    for (var i = 0; i < total; i++) {
+      var off = !!state.slotsOff[i];
+      if (!off) on += 1;
+      var left = L.left + (i % L.cols) * L.w;
+      var top = L.top + Math.floor(i / L.cols) * L.h;
+      html += '<button type="button" class="label-slot' + (off ? ' is-off' : '') + '" data-slot="' + i + '"' +
+        ' aria-pressed="' + (!off) + '" aria-label="' + (i + 1) + '番目のラベル：' + (off ? '印刷しない' : '印刷する') + '"' +
+        ' style="left:' + left + 'mm;top:' + top + 'mm;width:' + L.w + 'mm;height:' + L.h + 'mm">' + inner + '</button>';
+    }
+    labelsSheet.className = 'sheet labels layout-' + key + (state.prefs.guides ? ' show-guides' : '');
+    labelsSheet.innerHTML = html;
+    slotCount.textContent = total + '枚中 ' + on + '枚を印刷します';
+    if (focusSlot != null) {
+      var btn = labelsSheet.querySelector('[data-slot="' + focusSlot + '"]');
+      if (btn) btn.focus({ preventScroll:true });
+    }
+  }
+
+  function renderAll(){
+    var items = selectedItems();
+    var notes = autoNotes(items);
+    renderNotesUI(notes);
+    envHint.classList.toggle('hidden', !state.checked.envelope);
+    resendFields.classList.toggle('hidden', state.template !== 'resend');
+    renderLetter(items, notes);
+    renderLabels();
+  }
+
+  // ---------- プレビューの縮小表示 ----------
+  var lastAvail = -1;
+  function fitPreview(){
+    var style = window.getComputedStyle(previewBody);
+    var avail = previewBody.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    if (avail === lastAvail) return;
+    lastAvail = avail;
+    [frameLetter, frameLabels].forEach(function(frame){
+      var sheet = frame.querySelector('.sheet');
+      var w = sheet.offsetWidth, h = sheet.offsetHeight;
+      if (!w || avail <= 0) return;
+      var s = Math.min(1, avail / w);
+      sheet.style.transform = 'scale(' + s + ')';
+      frame.style.width = (w * s) + 'px';
+      frame.style.height = (h * s) + 'px';
+    });
+  }
+
+  // ---------- タブ ----------
+  function setTab(tab, focus){
+    state.tab = tab;
+    var isLetter = tab === 'letter';
+    tabLetter.setAttribute('aria-selected', String(isLetter));
+    tabLabels.setAttribute('aria-selected', String(!isLetter));
+    tabLetter.tabIndex = isLetter ? 0 : -1;
+    tabLabels.tabIndex = isLetter ? -1 : 0;
+    panelLetter.classList.toggle('hidden', !isLetter);
+    panelLabels.classList.toggle('hidden', isLetter);
+    frameLetter.classList.toggle('is-inactive', !isLetter);
+    frameLabels.classList.toggle('is-inactive', isLetter);
+    printBtn.textContent = isLetter ? '送付状を印刷' : 'ラベルを印刷';
+    $('label-tips').classList.toggle('hidden', isLetter);
+    document.body.setAttribute('data-print', tab);
+    hideError();
+    if (focus) (isLetter ? tabLetter : tabLabels).focus();
+    fitPreview();
+  }
+
+  // ---------- 送付の種類 ----------
+  function isTextEdited(){
+    var t = TEMPLATES[state.template];
+    return cleanText(titleInput.value) !== t.title || bodyInput.value !== t.body.join('\n');
+  }
+  function applyTemplate(key, resetText){
+    var t = TEMPLATES[key];
+    state.template = key;
+    Array.prototype.forEach.call(tplList.querySelectorAll('input'), function(r){ r.checked = r.value === key; });
+    if (resetText) {
+      titleInput.value = t.title;
+      bodyInput.value = t.body.join('\n');
+    }
+    state.checked = {};
+    state.copies = {};
+    DOCS.forEach(function(doc){ if (doc.other) { state.otherLabels[doc.id] = ''; state.otherRet[doc.id] = true; } });
+    Object.keys(t.docs).forEach(function(id){ state.checked[id] = true; state.copies[id] = t.docs[id]; });
+    state.excludedNotes = {};
+    lastNotesSig = '';
+    syncDocsUI();
+    renderAll();
+  }
+
+  // ---------- 担当者 ----------
+  function setStaff(name, persist){
+    state.staff = STAFF.indexOf(name) >= 0 ? name : '';
+    Array.prototype.forEach.call(staffGroup.querySelectorAll('input'), function(r){ r.checked = r.value === state.staff; });
+    staffCallout.classList.toggle('hidden', !!state.staff);
+    staffGroup.classList.remove('is-invalid');
+    mobileInput.disabled = !state.staff;
+    mobileInput.value = state.staff ? (mobiles[state.staff] || '') : '';
+    mobileInput.placeholder = state.staff ? '例）080-0000-0000' : '先に担当者を選んでください';
+    mobileHint.textContent = state.staff
+      ? '「' + state.staff + '」さんの携帯番号として、この端末に保存されます。空欄なら送付状に載りません。'
+      : '携帯番号は担当者ごとにこの端末へ保存され、送付状の差出人欄に載ります。空欄なら載りません。';
+    if (persist) save(KEY_STAFF, state.staff);
+    renderAll();
+  }
+
+  // ---------- 印刷 ----------
+  function hideError(){
+    printError.classList.add('hidden');
+    printError.innerHTML = '';
+    [userInput, fubiDocInput].forEach(function(el){ el.removeAttribute('aria-invalid'); });
+  }
+  function showError(problems){
+    printError.innerHTML = '印刷する前に、次の項目を入力してください。<ul>' +
+      problems.map(function(p){ return '<li>' + escapeHtml(p.text) + '</li>'; }).join('') + '</ul>';
+    printError.classList.remove('hidden');
+    previewBody.scrollTop = 0;
+    var first = problems[0];
+    if (first && first.el) {
+      if (first.el.setAttribute) first.el.setAttribute('aria-invalid', 'true');
+      if (first.el.scrollIntoView) first.el.scrollIntoView({ block:'center', behavior:'smooth' });
+      var focusable = first.el.matches && first.el.matches('input,select,textarea') ? first.el : first.el.querySelector && first.el.querySelector('input');
+      if (focusable) window.setTimeout(function(){ focusable.focus({ preventScroll:true }); }, 250);
+    }
+  }
+  function letterProblems(){
+    var problems = [];
+    if (!state.staff) { problems.push({ text:'担当者（あなた）を選んでください', el:staffGroup }); staffGroup.classList.add('is-invalid'); }
+    if (!personName(userInput.value)) { problems.push({ text:'ご利用者名を入力してください', el:userInput }); userInput.setAttribute('aria-invalid', 'true'); }
+    if (bodyInput.value.indexOf('【不備書類】') >= 0 && !cleanText(fubiDocInput.value)) {
+      problems.push({ text:'不備があった書類を入力してください', el:fubiDocInput });
+      fubiDocInput.setAttribute('aria-invalid', 'true');
+    }
+    return problems;
+  }
+  function doPrint(){
+    hideError();
+    if (state.tab === 'letter') {
+      var problems = letterProblems();
+      if (problems.length) { showError(problems); return; }
+      if (!selectedItems().length && !window.confirm('同封する書類が1つも選ばれていません。このまま印刷しますか？')) return;
+      if (state.letterOverflow && !window.confirm('文章が多く、A4 1枚に収まっていません。はみ出した部分は印刷されません。このまま印刷しますか？')) return;
+    } else {
+      if (!state.staff) { staffGroup.classList.add('is-invalid'); showError([{ text:'担当者（あなた）を選んでください', el:staffGroup }]); return; }
+      var total = LAYOUTS[state.prefs.layout].cols * LAYOUTS[state.prefs.layout].rows;
+      var off = Object.keys(state.slotsOff).filter(function(k){ return state.slotsOff[k]; }).length;
+      if (off >= total) { showError([{ text:'印刷するラベルの位置を1つ以上選んでください', el:null }]); return; }
+    }
+    document.body.setAttribute('data-print', state.tab);
+    window.print();
+  }
+
+  function clearForm(){
+    if (!window.confirm('お客様の入力内容を消去して、新しい送付状を作りますか？（担当者と携帯番号はそのまま残ります）')) return;
+    userInput.value = '';
+    addresseeInput.value = '';
+    fubiDocInput.value = DEFAULT_FUBI_DOC;
+    fubiDetailInput.value = '';
+    extraNotes.value = '';
+    dateInput.value = todayValue();
+    hideError();
+    applyTemplate(state.template, true);
+    userInput.focus();
+  }
+
+  // ---------- イベント ----------
+  staffGroup.addEventListener('change', function(e){
+    if (e.target.name === 'staff') setStaff(e.target.value, true);
+  });
+  mobileInput.addEventListener('input', function(){
+    if (!state.staff) return;
+    mobiles[state.staff] = mobileInput.value.trim();
+    save(KEY_MOBILES, mobiles);
+    renderAll();
+  });
+  [userInput, addresseeInput, fubiDocInput, fubiDetailInput, extraNotes, titleInput, bodyInput].forEach(function(el){
+    el.addEventListener('input', function(){
+      if (el.getAttribute('aria-invalid') && cleanText(el.value)) el.removeAttribute('aria-invalid');
+      renderAll();
+    });
+  });
+  dateInput.addEventListener('change', renderAll);
+  dateInput.addEventListener('input', renderAll);
+  eraSelect.addEventListener('change', function(){
+    state.prefs.era = eraSelect.value;
+    save(KEY_PREFS, state.prefs);
+    renderAll();
+  });
+
+  tplList.addEventListener('change', function(e){
+    if (e.target.name !== 'template') return;
+    var key = e.target.value;
+    var resetText = true;
+    if (isTextEdited()) {
+      resetText = window.confirm('件名・本文を書き換えています。「' + TEMPLATES[key].name + '」の文面に置き換えますか？\n（キャンセルすると、書き換えた文面のまま書類の選択だけ切り替えます）');
+    }
+    applyTemplate(key, resetText);
+  });
+
+  docList.addEventListener('change', function(e){
+    var id = e.target.dataset && e.target.dataset.id;
+    if (!id) return;
+    if (e.target.classList.contains('doc-check')) {
+      state.checked[id] = e.target.checked;
+      if (e.target.checked && !state.copies[id] && TEMPLATES[state.template].docs[id]) state.copies[id] = TEMPLATES[state.template].docs[id];
+      if (e.target.checked && e.target.closest('.doc').querySelector('.doc-other-name') && !cleanText(state.otherLabels[id])) {
+        window.setTimeout(function(){ e.target.closest('.doc').querySelector('.doc-other-name').focus(); }, 0);
+      }
+    } else if (e.target.classList.contains('doc-copies')) {
+      state.copies[id] = parseInt(e.target.value, 10) || 0;
+    } else if (e.target.classList.contains('doc-ret')) {
+      state.otherRet[id] = e.target.checked;
+    }
+    syncDocsUI();
+    renderAll();
+  });
+  docList.addEventListener('input', function(e){
+    if (!e.target.classList.contains('doc-other-name')) return;
+    var id = e.target.dataset.id;
+    state.otherLabels[id] = e.target.value;
+    state.checked[id] = !!cleanText(e.target.value);
+    syncDocsUI();
+    renderAll();
+  });
+
+  autoNotesBox.addEventListener('change', function(e){
+    var key = e.target.dataset && e.target.dataset.key;
+    if (!key) return;
+    state.excludedNotes[key] = !e.target.checked;
+    renderAll();
+  });
+
+  $('reset-text').addEventListener('click', function(){
+    var t = TEMPLATES[state.template];
+    titleInput.value = t.title;
+    bodyInput.value = t.body.join('\n');
+    renderAll();
+  });
+  $('goto-labels').addEventListener('click', function(){
+    setTab('labels', true);
+    if (window.matchMedia('(max-width:900px)').matches) previewBody.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+  $('clear-btn').addEventListener('click', clearForm);
+
+  tabLetter.addEventListener('click', function(){ setTab('letter'); });
+  tabLabels.addEventListener('click', function(){ setTab('labels'); });
+  [tabLetter, tabLabels].forEach(function(tab){
+    tab.addEventListener('keydown', function(e){
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setTab(state.tab === 'letter' ? 'labels' : 'letter', true);
+      }
+    });
+  });
+  printBtn.addEventListener('click', doPrint);
+
+  labelsSheet.addEventListener('click', function(e){
+    var slot = e.target.closest('.label-slot');
+    if (!slot) return;
+    var i = +slot.dataset.slot;
+    state.slotsOff[i] = !state.slotsOff[i];
+    hideError();
+    renderLabels(i);
+  });
+  $('slots-all').addEventListener('click', function(){ state.slotsOff = {}; hideError(); renderLabels(); });
+  $('slots-none').addEventListener('click', function(){
+    var L = LAYOUTS[state.prefs.layout];
+    state.slotsOff = {};
+    for (var i = 0; i < L.cols * L.rows; i++) state.slotsOff[i] = true;
+    renderLabels();
+  });
+  layoutSelect.addEventListener('change', function(){
+    state.prefs.layout = layoutSelect.value;
+    state.slotsOff = {};
+    save(KEY_PREFS, state.prefs);
+    renderLabels();
+  });
+  suffixSelect.addEventListener('change', function(){
+    state.prefs.suffix = suffixSelect.value;
+    save(KEY_PREFS, state.prefs);
+    renderLabels();
+  });
+  guidesCheck.addEventListener('change', function(){
+    state.prefs.guides = guidesCheck.checked;
+    save(KEY_PREFS, state.prefs);
+    renderLabels();
+  });
+  zaichuCheck.addEventListener('change', function(){
+    state.prefs.zaichu = zaichuCheck.checked;
+    save(KEY_PREFS, state.prefs);
+    renderLabels();
+  });
+
+  // ブラウザのメニューから印刷したときも、表示中のタブを印刷する
+  window.addEventListener('beforeprint', function(){
+    if (!document.body.getAttribute('data-print')) document.body.setAttribute('data-print', state.tab);
+  });
+  window.addEventListener('afterprint', function(){ document.body.setAttribute('data-print', state.tab); });
+
+  if (window.ResizeObserver) new ResizeObserver(fitPreview).observe(previewBody);
+  else window.addEventListener('resize', fitPreview);
+
+  // ---------- 起動 ----------
+  buildStaff();
+  buildTemplates();
+  buildDocs();
+  buildLayouts();
+
+  var savedPrefs = load(KEY_PREFS);
+  if (savedPrefs && typeof savedPrefs === 'object') {
+    if (savedPrefs.era === 'wareki' || savedPrefs.era === 'seireki') state.prefs.era = savedPrefs.era;
+    if (LAYOUTS[savedPrefs.layout]) state.prefs.layout = savedPrefs.layout;
+    if (savedPrefs.suffix === '宛' || savedPrefs.suffix === '行') state.prefs.suffix = savedPrefs.suffix;
+    if (typeof savedPrefs.guides === 'boolean') state.prefs.guides = savedPrefs.guides;
+    if (typeof savedPrefs.zaichu === 'boolean') state.prefs.zaichu = savedPrefs.zaichu;
+  }
+  eraSelect.value = state.prefs.era;
+  layoutSelect.value = state.prefs.layout;
+  suffixSelect.value = state.prefs.suffix;
+  guidesCheck.checked = state.prefs.guides;
+  zaichuCheck.checked = state.prefs.zaichu;
+
+  var savedMobiles = load(KEY_MOBILES);
+  if (savedMobiles && typeof savedMobiles === 'object') {
+    STAFF.forEach(function(name){ if (typeof savedMobiles[name] === 'string') mobiles[name] = savedMobiles[name]; });
+  }
+
+  dateInput.value = todayValue();
+  fubiDocInput.value = DEFAULT_FUBI_DOC;
+  applyTemplate('contract', true);
+  setStaff(load(KEY_STAFF), false);
+  setTab('letter');
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ fitLetter(); fitPreview(); });
+})();
+</script>
+</body>
+</html>

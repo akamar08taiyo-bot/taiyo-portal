@@ -95,6 +95,7 @@
   .c-emerald{background:#0e9f6e}
   .c-cyan{background:#0891b2}
   .c-orange{background:#e0621e}
+  .c-sky{background:#0369a1}
 
   .tile-usage{margin-top:2px;border-top:1px solid var(--line);padding-top:10px;}
   .tile-usage summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;
@@ -192,7 +193,8 @@
     calendar: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v4M17 2v4M3 9h18"/>',
     report: '<path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5M9 13h6M9 17h6M9 9h2"/>',
     flyer: '<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/><circle cx="16.5" cy="16.5" r="2.5"/>',
-    megaphone: '<path d="M3 11v2a2 2 0 0 0 2 2h1l2 6h2l-1-6h2l8 4V7l-8 4H5a2 2 0 0 0-2 2z"/><path d="M17 8a3 3 0 0 1 0 8"/>'
+    megaphone: '<path d="M3 11v2a2 2 0 0 0 2 2h1l2 6h2l-1-6h2l8 4V7l-8 4H5a2 2 0 0 0-2 2z"/><path d="M17 8a3 3 0 0 1 0 8"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>'
   };
   var GRIP_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
     '<circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/>' +
@@ -281,6 +283,14 @@
         '営業所は上部の共通メニューで選ぶと、住所・TEL・FAX・所長名が両モードに反映されます',
         '休暇案内は宛先・期間を入れるとカレンダー付きでA4 1枚に自動フィットします',
         '価格改定案内は案内文・対象商品・日付を編集し、印刷またはPDFで出力できます'
+      ] },
+    { name:'書類送付状作成', desc:'行橋営業所用｜利用者様への書類送付状と返送用封筒ラベルの作成・印刷', icon:'mail', color:'c-sky',
+      url:'soufujo/index.html', ready:true,
+      usage:[
+        '最初に担当者（自分）をリストから選びます（この端末に記憶されます）',
+        'ご利用者名を入れ、送付の種類と同封する書類にチェックを付けます',
+        '「記」の書類一覧と注意書き（※）は、チェックした書類から自動で作成されます',
+        '「返送用封筒ラベル」タブで、営業所・担当者宛のラベルをA4ラベル用紙に印刷できます'
       ] }
   ];
 

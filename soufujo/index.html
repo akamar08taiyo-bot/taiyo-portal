@@ -97,6 +97,11 @@
   .env-fields{margin:0;}
   .sub-title{margin:0 0 12px;color:var(--navy);font-size:15px;font-weight:800;}
   .zip-input{max-width:210px;}
+  .zip-status{margin:-4px 0 14px;padding:10px 12px;border-radius:8px;background:#eef6ff;border:1px solid #cfe0fb;
+    color:#1d4580;font-size:14px;line-height:1.6;}
+  .zip-status p{margin:0;}
+  .zip-status .zip-choice{display:block;width:100%;height:auto;min-height:40px;margin-top:8px;padding:8px 12px;
+    text-align:left;white-space:normal;font-size:14.5px;line-height:1.5;}
 
   /* 同封書類 */
   .doc-list{display:grid;gap:6px;}
@@ -368,16 +373,22 @@
       <p class="hint" style="margin:-4px 0 12px">ご家族など、ご利用者様以外にお送りするときだけ入力します。「様」は自動で付きます。</p>
       <div class="sub-fields env-fields">
         <p class="sub-title">封筒（送付用）のあて先</p>
-        <label class="field"><span class="field-label">郵便番号<span class="tag-opt">封筒用</span></span>
-          <input id="zip-input" class="zip-input" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="例）824-0000" />
-        </label>
-        <label class="field"><span class="field-label">住所<span class="tag-opt">封筒用</span></span>
-          <input id="addr1-input" type="text" autocomplete="off" placeholder="例）福岡県行橋市〇〇1-2-3" />
-        </label>
+        <div class="field">
+          <label class="field-label" for="zip-input">郵便番号<span class="tag-opt">封筒用</span></label>
+          <input id="zip-input" class="zip-input" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="例）824-0000" aria-describedby="zip-status" />
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <label class="field-label" for="addr1-input">住所<span class="tag-opt">封筒用</span></label>
+            <button type="button" class="link-btn" id="addr-to-zip">住所から郵便番号を入れる</button>
+          </div>
+          <input id="addr1-input" type="text" autocomplete="off" placeholder="例）福岡県行橋市〇〇1-2-3" aria-describedby="zip-status" />
+        </div>
+        <div class="zip-status hidden" id="zip-status" role="status" aria-live="polite"></div>
         <label class="field"><span class="field-label">建物名・部屋番号など<span class="tag-opt">任意</span></span>
           <input id="addr2-input" type="text" autocomplete="off" placeholder="例）〇〇マンション101号" />
         </label>
-        <p class="hint">お送りする封筒の宛名（A4上半分）に印刷されます。送付状には載らず、この端末にも保存されません。<button type="button" class="link-btn goto-env">封筒を確認する</button></p>
+        <p class="hint">郵便番号を入れると住所が自動で入ります（住所から郵便番号を入れることもできます）。お送りする封筒の宛名（A4上半分）に印刷され、送付状には載りません。この端末にも保存されません。<button type="button" class="link-btn goto-env">封筒を確認する</button></p>
       </div>
     </div>
 
@@ -718,6 +729,94 @@
   }
   function currentLayout(){
     return LAYOUTS[state.prefs.layout] || LAYOUTS.set;
+  }
+
+  // ---------- 郵便番号 ⇔ 住所 ----------
+  // 日本郵便の郵便番号データを同じサイトの zip/ に置き、端末の中で検索する（入力した住所を外部に送らない）。
+  // データは soufujo/tools/build_zip_data.py で作る。都道府県ごとのファイルを、必要になったときだけ読み込む。
+  var ZIP_DIR = 'zip/';
+  var zipIndexPromise = null, zipPrefFiles = {};
+  var lookupSeq = 0, lastZipLooked = '', lastAutoAddr = '';
+  var ZIP_LOAD_ERROR = '郵便番号データを読み込めませんでした。通信状態を確かめるか、手で入力してください。';
+
+  function fetchJSON(url){
+    return window.fetch(url).then(function(res){
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    });
+  }
+  function loadZipIndex(){
+    if (!zipIndexPromise) {
+      zipIndexPromise = fetchJSON(ZIP_DIR + 'index.json').catch(function(e){ zipIndexPromise = null; throw e; });
+    }
+    return zipIndexPromise;
+  }
+  function loadPrefFile(code){
+    var key = (code < 10 ? '0' : '') + code;
+    if (!zipPrefFiles[key]) {
+      zipPrefFiles[key] = fetchJSON(ZIP_DIR + key + '.json').catch(function(e){ delete zipPrefFiles[key]; throw e; });
+    }
+    return zipPrefFiles[key];
+  }
+  // 住所の表記ゆれをそろえる（全角英数→半角、空白を詰める、ヶ・ヵ→ケ、「大字」を省く）
+  function normAddr(v){
+    var s = String(v || '');
+    if (s.normalize) s = s.normalize('NFKC');
+    return s.replace(/[\s\u3000]+/g, '').replace(/[ヶヵ]/g, 'ケ').replace(/大字/g, '');
+  }
+  function uniq(list){
+    var seen = {};
+    return list.filter(function(x){ if (seen[x]) return false; seen[x] = true; return true; });
+  }
+  function zipRow(f, r){ return { zip:r[0], pref:f.pref, city:f.cities[r[1]], town:r[2], note:r[3] || '' }; }
+  function fullAddr(r){ return r.pref + r.city + r.town; }
+
+  function lookupByZip(zip7){
+    return loadZipIndex().then(function(idx){
+      var codes = idx.prefix[zip7.slice(0, 3)];
+      if (codes == null) return [];
+      return Promise.all([].concat(codes).map(loadPrefFile)).then(function(files){
+        var out = [];
+        files.forEach(function(f){
+          f.rows.forEach(function(r){ if (r[0] === zip7) out.push(zipRow(f, r)); });
+        });
+        return out;
+      });
+    });
+  }
+  function lookupByAddress(text){
+    var s = normAddr(text);
+    return loadZipIndex().then(function(idx){
+      var code = 0;
+      idx.prefs.forEach(function(name, i){
+        if (!code && s.indexOf(name) === 0) { code = i + 1; s = s.slice(name.length); }
+      });
+      // 都道府県が書かれていないときは福岡県の中で探す
+      return loadPrefFile(code || 40).then(function(f){
+        var best = null;
+        f.cities.forEach(function(city, ci){
+          var variants = [city];
+          var m = /^(.+?郡)(.+[町村])$/.exec(city);   // 「京都郡みやこ町」は「みやこ町」でも探す
+          if (m) variants.push(m[2]);
+          variants.forEach(function(v){
+            var nv = normAddr(v);
+            if (s.indexOf(nv) === 0 && (!best || nv.length > best.len)) best = { ci:ci, len:nv.length };
+          });
+        });
+        if (!best) return [];
+        var rest = s.slice(best.len);
+        var rows = f.rows.filter(function(r){ return r[1] === best.ci; });
+        var hit = [], hitLen = 0;
+        rows.forEach(function(r){
+          var nt = normAddr(r[2]);
+          if (!nt || rest.indexOf(nt) !== 0) return;
+          if (nt.length > hitLen) { hit = [r]; hitLen = nt.length; }
+          else if (nt.length === hitLen) hit.push(r);
+        });
+        if (!hit.length) hit = rows.filter(function(r){ return !r[2]; });   // 町域が分からないときは市区町村の番号
+        return hit.map(function(r){ return zipRow(f, r); });
+      });
+    });
   }
 
   // ---------- 画面の組み立て ----------
@@ -1275,6 +1374,10 @@
     zipInput.value = '';
     addr1Input.value = '';
     addr2Input.value = '';
+    lookupSeq++;
+    lastZipLooked = '';
+    lastAutoAddr = '';
+    showZipStatus('');
     fubiDocInput.value = DEFAULT_FUBI_DOC;
     fubiDetailInput.value = '';
     extraNotes.value = '';
@@ -1282,6 +1385,100 @@
     hideError();
     applyTemplate(state.template, true);
     userInput.focus();
+  }
+
+  // ---------- 郵便番号 ⇔ 住所：画面の動き ----------
+  var zipStatus = $('zip-status');
+  function showZipStatus(message, choices){
+    zipStatus.innerHTML = '';
+    if (!message) { zipStatus.classList.add('hidden'); return; }
+    var p = document.createElement('p');
+    p.textContent = message;
+    zipStatus.appendChild(p);
+    (choices || []).forEach(function(c){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn btn-ghost zip-choice';
+      b.textContent = c.label;
+      b.addEventListener('click', c.act);
+      zipStatus.appendChild(b);
+    });
+    zipStatus.classList.remove('hidden');
+  }
+  // 郵便番号から住所を入れる。自分で書いた住所は上書きせず、置き換えるかどうかを聞く
+  function applyAddress(full, force){
+    var cur = cleanText(addr1Input.value);
+    if (!force && cur && cur !== lastAutoAddr) {
+      if (normAddr(cur).indexOf(normAddr(full)) === 0) { showZipStatus(''); return; }
+      showZipStatus('この郵便番号の住所は「' + full + '」です（今の住所と違います）。',
+        [{ label:'住所を「' + full + '」に置き換える', act:function(){ applyAddress(full, true); } }]);
+      return;
+    }
+    var moveFocus = force || document.activeElement === zipInput;
+    addr1Input.value = full;
+    lastAutoAddr = full;
+    addr1Input.removeAttribute('aria-invalid');
+    renderAll();
+    showZipStatus('郵便番号から住所を入れました。続けて番地などを入力してください。');
+    if (moveFocus) {
+      addr1Input.focus();
+      try { addr1Input.setSelectionRange(full.length, full.length); } catch(e){}
+    }
+  }
+  function zipLookupIfComplete(){
+    var d = zipDigits(zipInput.value);
+    if (d.length !== 7) {
+      lastZipLooked = '';
+      if (!d.length) showZipStatus('');
+      return;
+    }
+    if (d === lastZipLooked) return;
+    lastZipLooked = d;
+    var seq = ++lookupSeq;
+    showZipStatus('郵便番号から住所を探しています…');
+    lookupByZip(d).then(function(list){
+      if (seq !== lookupSeq) return;
+      if (!list.length) { showZipStatus('この郵便番号の住所は見つかりませんでした。住所を入力してください。'); return; }
+      var addrs = uniq(list.map(fullAddr));
+      if (addrs.length === 1) { applyAddress(addrs[0], false); return; }
+      showZipStatus('この郵便番号には住所が複数あります。当てはまるものを選んでください。',
+        addrs.slice(0, 8).map(function(a){ return { label:a, act:function(){ applyAddress(a, true); } }; }));
+    }).catch(function(){
+      if (seq !== lookupSeq) return;
+      lastZipLooked = '';
+      showZipStatus(ZIP_LOAD_ERROR);
+    });
+  }
+  function setZipFromLookup(zip7){
+    zipInput.value = formatZip(zip7);
+    lastZipLooked = zip7;
+    zipInput.removeAttribute('aria-invalid');
+    renderAll();
+    showZipStatus('住所から郵便番号（〒' + formatZip(zip7) + '）を入れました。');
+  }
+  // 住所から郵便番号を入れる（manual: ボタンを押したとき。自動のときは見つからなくても何も出さない）
+  function zipFromAddress(manual){
+    var text = cleanText(addr1Input.value);
+    if (!text) { if (manual) showZipStatus('先に住所を入力してください。'); return; }
+    var seq = ++lookupSeq;
+    if (manual) showZipStatus('住所から郵便番号を探しています…');
+    lookupByAddress(text).then(function(list){
+      if (seq !== lookupSeq) return;
+      var zips = uniq(list.map(function(r){ return r.zip; }));
+      if (!zips.length) {
+        if (manual) showZipStatus('この住所の郵便番号は見つかりませんでした。都道府県名から入力すると見つかりやすくなります。');
+        return;
+      }
+      if (zips.length === 1) { setZipFromLookup(zips[0]); return; }
+      showZipStatus('番地などによって郵便番号が分かれています。当てはまるものを選んでください。',
+        list.slice(0, 8).map(function(r){
+          return { label:'〒' + formatZip(r.zip) + '　' + fullAddr(r) + (r.note ? '（' + r.note + '）' : ''),
+                   act:function(){ setZipFromLookup(r.zip); } };
+        }));
+    }).catch(function(){
+      if (seq !== lookupSeq) return;
+      if (manual) showZipStatus(ZIP_LOAD_ERROR);
+    });
   }
 
   // ---------- イベント ----------
@@ -1304,7 +1501,14 @@
   zipInput.addEventListener('change', function(){
     if (zipDigits(zipInput.value).length === 7) zipInput.value = formatZip(zipInput.value);
     renderAll();
+    zipLookupIfComplete();
   });
+  // 郵便番号を7桁入れたら住所を探す。住所を入れ終えたとき郵便番号が空なら、住所から探す
+  zipInput.addEventListener('input', zipLookupIfComplete);
+  addr1Input.addEventListener('change', function(){
+    if (!zipDigits(zipInput.value)) zipFromAddress(false);
+  });
+  $('addr-to-zip').addEventListener('click', function(){ zipFromAddress(true); });
   dateInput.addEventListener('change', renderAll);
   dateInput.addEventListener('input', renderAll);
   eraSelect.addEventListener('change', function(){

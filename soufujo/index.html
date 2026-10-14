@@ -254,9 +254,6 @@
     letter-spacing:.15em;line-height:1.3;}
   .env-from{margin-left:auto;color:#333;font-size:9pt;line-height:1.55;text-align:right;}
   .env-cut{position:absolute;left:0;right:0;top:148.5mm;border-top:.35mm dashed #666;}
-  .env-cut span{position:absolute;left:50%;top:0;transform:translate(-50%,-50%);display:inline-flex;align-items:center;
-    gap:1.5mm;padding:0 3mm;background:#fff;color:#555;font-size:9pt;white-space:nowrap;}
-  .env-cut svg{width:4.2mm;height:4.2mm;}
 
   /* ---------- 貼り付けイメージ（画面だけ。角2封筒・薄いオレンジ・実寸比） ---------- */
   .paste-mock{margin:16px 0 0;padding:14px;border-radius:12px;background:#fff;border:1px solid var(--line);}
@@ -599,8 +596,6 @@
     a10: { name:'A4 10面ラベル（返送用のみ・86.4×50.8mm）', type:'grid', cols:2, rows:5, w:86.4, h:50.8, top:21.5, left:18.6 },
     a12: { name:'A4 12面ラベル（返送用のみ・86.4×42.3mm）', type:'grid', cols:2, rows:6, w:86.4, h:42.3, top:21.6, left:18.6 }
   };
-  var SCISSORS_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-    '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg>';
 
   var state = {
     staff: '',
@@ -1041,7 +1036,7 @@
     return { send: send, ret: ret };
   }
   function envelopeSetHtml(halves){
-    var cut = '<div class="env-cut" aria-hidden="true"><span>' + SCISSORS_SVG + 'キリトリ</span></div>';
+    var cut = '<div class="env-cut" aria-hidden="true"></div>';
     return halves.send + halves.ret + cut;
   }
   function renderPasteMock(halves){

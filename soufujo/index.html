@@ -321,7 +321,8 @@
   .kzf .round{border-radius:1.6mm;}
   .kzf .ttl{text-align:center;font-size:10pt;font-weight:800;}
   .kzf .cc{display:inline-block;width:4mm;height:4mm;margin-left:.6mm;border:.3mm solid #111;border-radius:50%;font-size:6.5pt;line-height:3.6mm;text-align:center;vertical-align:.3mm;}
-  .kzf .date{display:flex;align-items:flex-end;justify-content:flex-end;gap:.8mm;padding:0 2mm 1mm 0;font-size:8pt;}
+  .kzf .date{display:flex;align-items:flex-end;justify-content:flex-end;gap:.8mm;padding:0 2mm 1mm 0;font-size:8pt;white-space:nowrap;}
+  .kzf .date .kz-skipnote{margin-right:auto;padding-left:1.5mm;}
   .kzf .date .hand{font-size:10.5pt;}
   .kzf .to{display:flex;align-items:flex-end;padding:0 1mm .6mm 3.5mm;border-bottom:.35mm solid #222;}
   .kzf .to .hand{font-size:13pt;}
@@ -631,7 +632,7 @@
           <div class="kz-main">
             <div class="kzf">
               <div class="gray" style="left:0.5mm;top:2.4mm;width:39.5mm;height:3.2mm;">〔ジャックス使用欄〕</div>
-              <div class="y date" style="left:80mm;top:0.4mm;width:48.5mm;height:6.5mm;">申込日　<span class="hand kz-y"></span>年<span class="hand kz-m"></span>月<span class="hand kz-d"></span>日</div>
+              <div class="date" style="left:60mm;top:0.4mm;width:68.5mm;height:6.5mm;"><span class="kz-skipnote">（記入不要）</span>申込日　　　年　　月　　日</div>
               <div class="bx round row3" style="left:1mm;top:7.9mm;width:127mm;height:6.8mm;"><span>委託者名</span><span class="gray">太陽シルバーサービス株式会社</span><span class="xs">ジャックス<br>営業店</span><span></span></div>
               <div class="bx row2" style="left:1mm;top:14.5mm;width:81.4mm;height:6.9mm;"><span>契約番号</span><span class="gray">（印字済み）</span></div>
               <div class="bx" style="left:107.6mm;top:15.8mm;width:20.3mm;height:6.6mm;"></div>
@@ -679,7 +680,6 @@
               <div class="end" style="left:0mm;top:123mm;width:128.4mm;height:3mm;">（この下の「預金口座振替規定」などは記入不要です）</div>
             </div>
             <div class="kz-notes">
-              <div class="kz-note y"><b class="t">申込日</b><span class="kz-who kz-cy">【どちらの方も】</span><br>ご記入日をご記入ください。</div>
               <div class="kz-note b"><b class="t">捨印</b><span class="kz-who kz-cb">【ゆうちょ銀行以外の方】</span><br><span class="kz-strong">お届け印を必ず押してください。</span>ゆうちょ銀行の方は不要です。</div>
               <div class="kz-note b"><b class="t">金融機関名・支店名</b><span class="kz-who kz-cb">【ゆうちょ銀行以外の方】</span><br>通帳どおりの正式名称とフリガナ。「銀行」「支店」など当てはまるものを○で囲みます。</div>
               <div class="kz-note b"><b class="t">預金種目</b><span class="kz-who kz-cb">【ゆうちょ銀行以外の方】</span><br>「普通」か「当座」を○で囲みます。</div>
@@ -1347,15 +1347,8 @@
     renderKoza();
   }
 
-  // 口座記入例：申込日は送付状の日付、問い合わせ先は担当者に合わせる
+  // 口座記入例：問い合わせ先は担当者に合わせる
   function renderKoza(){
-    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateInput.value || '') || /^(\d{4})-(\d{2})-(\d{2})$/.exec(todayValue());
-    var y = +m[1];
-    if (state.prefs.era === 'wareki') y = formatDate(m[0], 'wareki').replace(/年.*$/, '');
-    var parts = { 'kz-y': String(y), 'kz-m': String(+m[2]), 'kz-d': String(+m[3]) };
-    Object.keys(parts).forEach(function(cls){
-      Array.prototype.forEach.call(document.querySelectorAll('#koza-sheet .' + cls), function(el){ el.textContent = parts[cls]; });
-    });
     $('kz-foot').textContent = 'ご不明な点は、' + OFFICE.company + '　' + OFFICE.office + '（TEL ' + OFFICE.tel + '）' +
       (state.staff ? '営業担当 ' + state.staff + ' ' : '') + 'までお気軽にお問い合わせください。';
   }

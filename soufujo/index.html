@@ -285,11 +285,13 @@
   .kz-head{display:flex;align-items:flex-end;justify-content:space-between;gap:6mm;padding-bottom:1.6mm;border-bottom:.6mm solid #0c2a4d;}
   .kz-title{margin:0;font-size:16pt;font-weight:800;color:#0c2a4d;letter-spacing:.03em;line-height:1.3;}
   .kz-sub{margin:.3mm 0 0;font-size:9.5pt;color:#333;}
-  .kz-badge{flex:none;margin-bottom:1mm;padding:.4mm 4mm;border:.6mm solid #d0021b;color:#d0021b;font-size:14pt;font-weight:800;letter-spacing:.25em;}
+  .kz-badge{flex:none;margin-bottom:1mm;padding:.4mm 4mm;border:.6mm solid #0c2a4d;color:#0c2a4d;font-size:14pt;font-weight:800;letter-spacing:.25em;}
+  /* 赤字は「右詰め」と「銀行印で」だけ（ほかの強調は太字の黒） */
   .kz-red{color:#d0021b;font-weight:800;}
+  .kz-strong{font-weight:800;}
   .kz-guide{margin:2.6mm 0 0;padding:1.8mm 3.2mm;border:.35mm solid #c9d2dc;border-radius:2mm;font-size:10pt;line-height:1.75;}
   .kz-guide p{margin:0;}
-  .kz-guide .kz-red{font-size:10.5pt;}
+  .kz-guide .kz-strong{font-size:10.5pt;}
   .kz-sw{display:inline-block;width:5.5mm;height:3.3mm;margin:0 1mm 0 0;vertical-align:-.6mm;border:.35mm solid;}
   .kz-sw.y,.kzf .y{background:#fff8dc;}
   .kz-sw.b,.kzf .b{background:#eaf2ff;}
@@ -301,8 +303,8 @@
   .kz-cy{color:#8a6a00;font-weight:800;}
   .kz-cb{color:#1d4ed8;font-weight:800;}
   .kz-cg{color:#0b7a3e;font-weight:800;}
-  .kz-main{display:grid;grid-template-columns:134.5mm minmax(0,1fr);gap:4mm;margin-top:3.4mm;}
-  .kzf{position:relative;width:128.5mm;height:126mm;margin-left:6mm;font-size:6.5pt;line-height:1.25;}
+  .kz-main{display:grid;grid-template-columns:129.5mm minmax(0,1fr);gap:4mm;margin-top:3.4mm;}
+  .kzf{position:relative;width:128.5mm;height:126mm;margin-left:1mm;font-size:6.5pt;line-height:1.25;}
   .kzf > div{position:absolute;box-sizing:border-box;}
   .kzf .y{outline:.4mm solid #d9b84a;outline-offset:-.4mm;}
   .kzf .b{outline:.4mm solid #7fa6e6;outline-offset:-.4mm;}
@@ -361,10 +363,6 @@
   .kzf .stamp .hd{padding:.5mm 0;border-bottom:.25mm solid #333;text-align:center;font-size:6.5pt;}
   .kzf .stamp .seal{margin:5.5mm auto 0;}
   .kzf .end{font-size:6.5pt;color:#666;text-align:center;}
-  .kz-n{position:absolute;z-index:1;left:-1.6mm;top:-2.2mm;width:4.4mm;height:4.4mm;border-radius:50%;background:#d0021b;color:#fff;
-    font-family:"BIZ UDPGothic","Meiryo",sans-serif;font-size:8pt;font-weight:800;line-height:4.4mm;text-align:center;text-indent:0;}
-  .kz-n.in{position:static;display:inline-block;margin-right:1.2mm;vertical-align:.2mm;}
-  .kz-n.out{top:50%;margin-top:-2.2mm;}
   .hand{color:#1b3fa6;font-weight:600;
     font-family:"UD Digi Kyokasho N-R","UD デジタル 教科書体 N-R","UD Digi Kyokasho NK-R","Yu Mincho","YuMincho","Hiragino Mincho ProN","Noto Serif CJK JP","Noto Serif JP",serif;}
   .circ{display:inline-block;padding:0 .8mm;border:.3mm solid #1b3fa6;border-radius:50%;}
@@ -381,17 +379,16 @@
   .kz-who{display:inline-block;margin-left:1mm;font-size:6.8pt;font-weight:800;}
   /* 書き間違えたとき（まちがいやすいので大きく） */
   .kz-fixbox{display:grid;grid-template-columns:minmax(0,1fr) 66mm;gap:4mm;align-items:center;margin-top:5mm;padding:3mm 4mm;
-    border:.8mm solid #d0021b;border-radius:2.5mm;}
-  .kz-fixbox h2{margin:0 0 1mm;color:#d0021b;font-size:13.5pt;font-weight:800;}
+    border:.8mm solid #0c2a4d;border-radius:2.5mm;}
+  .kz-fixbox h2{margin:0 0 1mm;color:#0c2a4d;font-size:13.5pt;font-weight:800;}
   .kz-fixbox h2 small{margin-left:2mm;font-size:9pt;}
   .kz-fixbox p{margin:0;font-size:11pt;line-height:1.55;}
-  .kz-fixbox p b{color:#d0021b;}
   .kz-fixill{display:grid;grid-template-columns:auto auto auto;justify-content:center;align-items:center;gap:.6mm 2.4mm;text-align:center;}
   .kz-fixill s{text-decoration:line-through;text-decoration-style:double;text-decoration-color:#111;color:#1b3fa6;font-size:13pt;
     font-family:"UD Digi Kyokasho N-R","UD デジタル 教科書体 N-R","Yu Mincho","YuMincho","Hiragino Mincho ProN","Noto Serif CJK JP",serif;}
   .kz-fixill .hand{font-size:13pt;}
-  .kz-fixill small{font-size:7.5pt;color:#d0021b;font-weight:700;}
-  .kz-warn{margin:4mm 0 0;padding:0;list-style:none;color:#d0021b;font-size:10pt;line-height:1.65;}
+  .kz-fixill small{font-size:7.5pt;color:#333;font-weight:700;}
+  .kz-warn{margin:4mm 0 0;padding:0;list-style:none;color:#111;font-size:10pt;line-height:1.65;}
   .kz-warn li{padding-left:3.4mm;text-indent:-3.4mm;}
   .kz-warn li::before{content:'●';display:inline-block;width:3.4mm;text-indent:0;font-size:6.5pt;vertical-align:.4mm;}
   .kz-foot{margin:4mm 0 0;padding:2mm 3.2mm;border:.35mm solid #9aa5b1;border-radius:2mm;font-size:10pt;line-height:1.55;}
@@ -640,12 +637,12 @@
           <div class="kz-guide">
             <p><span class="kz-sw b"></span><span class="kz-cb">青い枠</span>：ゆうちょ銀行以外（銀行・信用金庫・信用組合・農協など）の方　<span class="kz-sw g"></span><span class="kz-cg">緑の枠</span>：ゆうちょ銀行の方</p>
             <p><span class="kz-sw y"></span><span class="kz-cy">黄色の欄</span>：どちらの方もご記入ください　<span class="kz-sw w"></span>白い欄：記入不要（記入済み）</p>
-            <p class="kz-red">青い枠と緑の枠は、お使いの口座に合わせて、どちらか一方だけご記入ください。</p>
+            <p class="kz-strong">青い枠と緑の枠は、お使いの口座に合わせて、どちらか一方だけご記入ください。</p>
           </div>
           <div class="kz-main">
             <div class="kzf">
               <div class="gray" style="left:0.5mm;top:2.4mm;width:39.5mm;height:3.2mm;">〔ジャックス使用欄〕</div>
-              <div class="y date" style="left:80mm;top:0.4mm;width:48.5mm;height:6.5mm;"><span class="kz-n">1</span>申込日　<span class="hand kz-y"></span>年<span class="hand kz-m"></span>月<span class="hand kz-d"></span>日</div>
+              <div class="y date" style="left:80mm;top:0.4mm;width:48.5mm;height:6.5mm;">申込日　<span class="hand kz-y"></span>年<span class="hand kz-m"></span>月<span class="hand kz-d"></span>日</div>
               <div class="bx round row3" style="left:1mm;top:7.9mm;width:127mm;height:6.8mm;"><span>委託者名</span><span class="gray">太陽シルバーサービス株式会社</span><span class="xs">ジャックス<br>営業店</span><span></span></div>
               <div class="bx row2" style="left:1mm;top:14.5mm;width:81.4mm;height:6.9mm;"><span>契約番号</span><span class="gray">（印字済み）</span></div>
               <div class="bx" style="left:107.6mm;top:15.8mm;width:20.3mm;height:6.6mm;"></div>
@@ -658,22 +655,22 @@
               <div class="m" style="left:1mm;top:51mm;width:91mm;height:3.6mm;">振替日・払込日 毎月27日（休業日の場合はその翌営業日）</div>
               <div class="m" style="left:1mm;top:54.6mm;width:91mm;height:3.2mm;">（収納会社）株式会社ジャックス</div>
               <div class="pill pb tab" style="left:102.5mm;top:22.6mm;width:26mm;height:2.9mm;">ゆうちょ銀行以外の方</div>
-              <div class="b sute fb" style="left:102.5mm;top:25.4mm;width:26mm;height:26.2mm;"><span class="kz-n">2</span><span>お届け印による捨印</span><span class="ring"><span class="seal"><span>山</span><span>田</span></span></span><span class="kz-red">（ゆうちょ銀行は除く）</span></div>
+              <div class="b sute fb" style="left:102.5mm;top:25.4mm;width:26mm;height:26.2mm;"><span>お届け印による捨印</span><span class="ring"><span class="seal"><span>山</span><span>田</span></span></span><span class="kz-strong">（ゆうちょ銀行は除く）</span></div>
               <div class="xs" style="left:83mm;top:52.4mm;width:45.5mm;height:5.4mm;font-size:4.9pt;white-space:nowrap;">注1 記号に6桁目がある場合は※欄にご記入ください<br>注2 番号は<span class="kz-red">右詰め</span>でご記入ください</div>
               <div class="" style="left:0.5mm;top:58.4mm;width:19.5mm;height:3.4mm;">【お支払口座】</div>
               <div class="pill pb" style="left:20.5mm;top:57.7mm;width:43.1mm;height:3.9mm;">ゆうちょ銀行以外の方はこちら</div>
               <div class="pill pg" style="left:64mm;top:57.7mm;width:65.2mm;height:3.9mm;">ゆうちょ銀行の方はこちら</div>
               <div class="thick" style="left:0mm;top:62.2mm;width:128.4mm;height:29.4mm;"></div>
               <div class="vl" style="left:0mm;top:62.2mm;width:6mm;height:29.4mm;">ゆうちょ銀行以外の金融機関</div>
-              <div class="b bank" style="left:6mm;top:62.2mm;width:57.8mm;height:19.7mm;"><span class="kz-n out" style="left:-11.4mm">3</span><div class="kana"><span>フリガナ</span><span class="hand">マルマル</span><span class="hand" style="margin-left:9mm">サンカクサンカク</span></div><div class="bankrow"><span class="hand">○○</span><span class="types"><span class="circ">銀　行</span><span>信用金庫</span><span>信用組合</span><span>農　協</span><span>労働金庫</span></span><span class="hand">△△</span><span class="types"><span class="circ">支　店</span><span>本　店</span><span>営業部</span><span>出張所</span></span></div></div>
+              <div class="b bank" style="left:6mm;top:62.2mm;width:57.8mm;height:19.7mm;"><div class="kana"><span>フリガナ</span><span class="hand">マルマル</span><span class="hand" style="margin-left:9mm">サンカクサンカク</span></div><div class="bankrow"><span class="hand">○○</span><span class="types"><span class="circ">銀　行</span><span>信用金庫</span><span>信用組合</span><span>農　協</span><span>労働金庫</span></span><span class="hand">△△</span><span class="types"><span class="circ">支　店</span><span>本　店</span><span>営業部</span><span>出張所</span></span></div></div>
               <div class="cell c" style="left:6mm;top:81.9mm;width:12.1mm;height:4.5mm;">預金種目</div>
-              <div class="cell b" style="left:18.1mm;top:81.9mm;width:45.7mm;height:4.5mm;"><span class="kz-n out" style="left:-23.5mm">4</span><span class="circ">1. 普通（総合口座）</span><span style="margin-left:5mm">2. 当座</span></div>
+              <div class="cell b" style="left:18.1mm;top:81.9mm;width:45.7mm;height:4.5mm;"><span class="circ">1. 普通（総合口座）</span><span style="margin-left:5mm">2. 当座</span></div>
               <div class="cell c" style="left:6mm;top:86.4mm;width:12.1mm;height:5.2mm;"><span style="font-size:5.6pt;line-height:1.1">口座番号<br><span class="kz-red">右詰め</span></span></div>
-              <div class="cell b" style="left:18.1mm;top:86.4mm;width:45.7mm;height:5.2mm;"><span class="kz-n out" style="left:-23.5mm">5</span><div class="digits hand"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span></div></div>
+              <div class="cell b" style="left:18.1mm;top:86.4mm;width:45.7mm;height:5.2mm;"><div class="digits hand"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span></div></div>
               <div class="vl" style="left:63.8mm;top:62.2mm;width:6.6mm;height:29.4mm;border-left:.45mm solid #222;">ゆうちょ銀行</div>
               <div class="cell c" style="left:70.4mm;top:62.2mm;width:25.9mm;height:4.3mm;">記号（注1）</div>
               <div class="cell c" style="left:96.3mm;top:62.2mm;width:32.1mm;height:4.3mm;">番号（注2）<span class="kz-red">右詰め</span></div>
-              <div class="cell g yu" style="left:70.4mm;top:66.5mm;width:58mm;height:6.9mm;padding:0;"><span class="kz-n">6</span><div class="digits hand"><span class="pre">1</span><span>2</span><span>3</span><span>4</span><span class="pre">0</span><span class="pre mark">※</span></div><div class="digits hand"><span></span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span></div></div>
+              <div class="cell g yu" style="left:70.4mm;top:66.5mm;width:58mm;height:6.9mm;padding:0;"><div class="digits hand"><span class="pre">1</span><span>2</span><span>3</span><span>4</span><span class="pre">0</span><span class="pre mark">※</span></div><div class="digits hand"><span></span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span></div></div>
               <div class="cell" style="left:70.4mm;top:73.4mm;width:25.9mm;height:4.2mm;">払込先口座番号</div>
               <div class="cell gray" style="left:96.3mm;top:73.4mm;width:32.1mm;height:4.2mm;">（印字済み）</div>
               <div class="cell" style="left:70.4mm;top:77.6mm;width:25.9mm;height:4.3mm;">払込先加入者名</div>
@@ -686,31 +683,31 @@
               <div class="cell gray" style="left:85.7mm;top:86.4mm;width:42.7mm;height:5.2mm;"><b style="font-size:9pt;color:#111">27日</b>（休業日の場合翌営業日）</div>
               <div class="thick" style="left:0mm;top:91.6mm;width:128.4mm;height:30.8mm;border-top:0;"></div>
               <div class="vl" style="left:0mm;top:91.6mm;width:5.9mm;height:30.8mm;font-size:7pt;letter-spacing:.3em;">口座名義人</div>
-              <div class="y holder" style="left:5.9mm;top:91.6mm;width:99.9mm;height:30.8mm;border-right:.25mm solid #333;"><span class="kz-n out" style="left:-11.3mm">7</span><div class="kana"><span>フリガナ</span><span class="hand" style="margin-left:14mm">ヤマダ　タロウ</span></div><span class="hand big">山田　太郎</span></div>
-              <div class="y cell stamp" style="left:105.8mm;top:91.6mm;width:22.6mm;height:30.8mm;border:0;"><span class="kz-n">8</span><div class="hd">お届け印</div><span class="seal"><span>山</span><span>田</span></span></div>
+              <div class="y holder" style="left:5.9mm;top:91.6mm;width:99.9mm;height:30.8mm;border-right:.25mm solid #333;"><div class="kana"><span>フリガナ</span><span class="hand" style="margin-left:14mm">ヤマダ　タロウ</span></div><span class="hand big">山田　太郎</span></div>
+              <div class="y cell stamp" style="left:105.8mm;top:91.6mm;width:22.6mm;height:30.8mm;border:0;"><div class="hd">お届け印</div><span class="seal"><span>山</span><span>田</span></span></div>
               <div class="frame fb" style="left:-0.8mm;top:61.6mm;width:64.8mm;height:30.8mm;"></div>
               <div class="frame fg" style="left:64mm;top:61.6mm;width:65.2mm;height:30.8mm;"></div>
               <div class="end" style="left:0mm;top:123mm;width:128.4mm;height:3mm;">（この下の「預金口座振替規定」などは記入不要です）</div>
             </div>
             <div class="kz-notes">
-              <div class="kz-note y"><span class="kz-n in">1</span><b class="t">申込日</b><span class="kz-who kz-cy">【どちらの方も】</span><br>ご記入日をご記入ください。</div>
-              <div class="kz-note b"><span class="kz-n in">2</span><b class="t">捨印</b><span class="kz-who kz-cb">【ゆうちょ銀行以外の方】</span><br><span class="kz-red">お届け印を必ず押してください。</span>ゆうちょ銀行の方は不要です。</div>
-              <div class="kz-note b"><span class="kz-n in">3</span><b class="t">金融機関名・支店名</b><span class="kz-who kz-cb">【ゆうちょ銀行以外の方】</span><br>通帳どおりの正式名称とフリガナ。「銀行」「支店」など当てはまるものを○で囲みます。</div>
-              <div class="kz-note b"><span class="kz-n in">4</span><b class="t">預金種目</b><span class="kz-who kz-cb">【ゆうちょ銀行以外の方】</span><br>「普通」か「当座」を○で囲みます。</div>
-              <div class="kz-note b"><span class="kz-n in">5</span><b class="t">口座番号</b><span class="kz-who kz-cb">【ゆうちょ銀行以外の方】</span><br><span class="kz-red">右詰め</span>でご記入ください（桁が少ないときは左を空けます）。</div>
-              <div class="kz-note g"><span class="kz-n in">6</span><b class="t">記号・番号</b><span class="kz-who kz-cg">【ゆうちょ銀行の方】</span><br>通帳の記号・番号。<span class="kz-red">番号は右詰め</span>。記号に6桁目があるときは※欄へ。</div>
-              <div class="kz-note y"><span class="kz-n in">7</span><b class="t">口座名義人</b><span class="kz-who kz-cy">【どちらの方も】</span><br>通帳と同じお名前とフリガナでご記入ください。</div>
-              <div class="kz-note y"><span class="kz-n in">8</span><b class="t">お届け印</b><span class="kz-who kz-cy">【どちらの方も】</span><br><span class="kz-red">銀行印（お届け印）</span>を、はっきり押してください。</div>
+              <div class="kz-note y"><b class="t">申込日</b><span class="kz-who kz-cy">【どちらの方も】</span><br>ご記入日をご記入ください。</div>
+              <div class="kz-note b"><b class="t">捨印</b><span class="kz-who kz-cb">【ゆうちょ銀行以外の方】</span><br><span class="kz-strong">お届け印を必ず押してください。</span>ゆうちょ銀行の方は不要です。</div>
+              <div class="kz-note b"><b class="t">金融機関名・支店名</b><span class="kz-who kz-cb">【ゆうちょ銀行以外の方】</span><br>通帳どおりの正式名称とフリガナ。「銀行」「支店」など当てはまるものを○で囲みます。</div>
+              <div class="kz-note b"><b class="t">預金種目</b><span class="kz-who kz-cb">【ゆうちょ銀行以外の方】</span><br>「普通」か「当座」を○で囲みます。</div>
+              <div class="kz-note b"><b class="t">口座番号</b><span class="kz-who kz-cb">【ゆうちょ銀行以外の方】</span><br><span class="kz-red">右詰め</span>でご記入ください（桁が少ないときは左を空けます）。</div>
+              <div class="kz-note g"><b class="t">記号・番号</b><span class="kz-who kz-cg">【ゆうちょ銀行の方】</span><br>通帳の記号・番号。<span class="kz-strong">番号は<span class="kz-red">右詰め</span></span>。記号に6桁目があるときは※欄へ。</div>
+              <div class="kz-note y"><b class="t">口座名義人</b><span class="kz-who kz-cy">【どちらの方も】</span><br>通帳と同じお名前とフリガナでご記入ください。</div>
+              <div class="kz-note y"><b class="t">お届け印</b><span class="kz-who kz-cy">【どちらの方も】</span><br><span class="kz-strong">銀行印（お届け印）</span>を、はっきり押してください。</div>
             </div>
           </div>
           <div class="kz-fixbox">
             <div>
               <h2>書き間違えたときは<small>※まちがいやすいので、ご注意ください</small></h2>
-              <p>まちがえた所を<b>二重線</b>で消し、<b>必ず銀行印（お届け印）で訂正印</b>を押して、正しく書き直してください。認印など<b>お届け印以外の印鑑</b>や、<b>修正液・修正テープ</b>は使えません。</p>
+              <p>まちがえた所を<b>二重線</b>で消し、<b>必ず<span class="kz-red">銀行印（お届け印）で</span>訂正印</b>を押して、正しく書き直してください。認印など<b>お届け印以外の印鑑</b>や、<b>修正液・修正テープ</b>は使えません。</p>
             </div>
             <div class="kz-fixill">
               <s>1234576</s><span class="seal"><span>山</span><span>田</span></span><span class="hand">1234567</span>
-              <small>二重線で消す</small><small>銀行印で訂正印</small><small>正しく書き直す</small>
+              <small>二重線で消す</small><small><span class="kz-red">銀行印で</span>訂正印</small><small>正しく書き直す</small>
             </div>
           </div>
           <ul class="kz-warn">

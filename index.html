@@ -96,6 +96,7 @@
   .c-cyan{background:#0891b2}
   .c-orange{background:#e0621e}
   .c-sky{background:#0369a1}
+  .c-slate{background:#4b5f80}
 
   .tile-usage{margin-top:2px;border-top:1px solid var(--line);padding-top:10px;}
   .tile-usage summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;
@@ -194,7 +195,8 @@
     report: '<path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5M9 13h6M9 17h6M9 9h2"/>',
     flyer: '<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/><circle cx="16.5" cy="16.5" r="2.5"/>',
     megaphone: '<path d="M3 11v2a2 2 0 0 0 2 2h1l2 6h2l-1-6h2l8 4V7l-8 4H5a2 2 0 0 0-2 2z"/><path d="M17 8a3 3 0 0 1 0 8"/>',
-    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>'
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>',
+    fax: '<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M7 18v3h10v-3"/><path d="M7 13h5"/><path d="M16.5 13h.5"/>'
   };
   var GRIP_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
     '<circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/>' +
@@ -292,6 +294,14 @@
         '「記」の書類一覧と注意書き（※）は、チェックした書類から自動で作成されます',
         '「封筒」タブでは、A4の上半分に送付用（お客様あて）、下半分に返送用（営業所・担当者宛）を印刷し、切り取って貼れます',
         '「まとめて印刷」で、1枚目に封筒、2枚目に送付状を続けて印刷できます'
+      ] },
+    { name:'FAX送付状作成', desc:'行橋営業所用｜居宅・メーカーなどへのFAX送付状を、種類のチェックと宛名の入力だけで作成・印刷', icon:'fax', color:'c-slate',
+      url:'https://akamar08taiyo-bot.github.io/-/fax.html', ready:true,
+      usage:[
+        '送るFAX（照会用紙・計画書・モニタリング・御見積書・メーカーへ見積依頼など）にチェックを入れると、文章が自動で入ります',
+        '居宅名・ケアマネ名・ご利用者名・枚数を入れると、文章の「〇〇」にご利用者名などが入ります（文章はその場で編集できます）',
+        '印刷デザインは「従来の送信票」「表形式」「文書形式」から選べ、A4 1枚で印刷できます',
+        '印刷した宛先は記憶され、次回から候補に出ます。差出人（営業所・担当者・住所など）は画面下の設定で変更できます'
       ] }
   ];
 

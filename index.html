@@ -38,10 +38,19 @@
   .login-btn:hover{background:var(--blue-deep);}
   .form-error{margin-top:2px;margin-bottom:12px;padding:9px 11px;border:1px solid #f0bcbc;
     border-radius:7px;color:#a23a3a;background:#fff3f3;font-size:11px;}
-  .save-warning-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
-    max-width:min(92vw,420px);padding:10px 14px;border:1px solid #f0bcbc;border-radius:9px;
-    color:#a23a3a;background:#fff3f3;font-size:12px;line-height:1.5;box-shadow:0 8px 24px rgba(162,58,58,.14);
-    z-index:50;}
+  /* 画面下に出すお知らせ（保存の警告と、隠した・戻したなどの操作のお知らせ）を縦に積む */
+  .toast-stack{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;
+    display:flex;flex-direction:column;align-items:center;gap:8px;width:max-content;max-width:min(92vw,460px);
+    pointer-events:none;}
+  .toast-stack > *{pointer-events:auto;}
+  .save-warning-toast{padding:10px 14px;border:1px solid #f0bcbc;border-radius:9px;
+    color:#a23a3a;background:#fff3f3;font-size:12px;line-height:1.5;box-shadow:0 8px 24px rgba(162,58,58,.14);}
+  .info-toast{display:flex;align-items:center;gap:14px;padding:11px 14px 11px 16px;border-radius:10px;
+    color:#fff;background:#0f1f33;font-size:12.5px;line-height:1.5;box-shadow:0 10px 28px rgba(8,33,63,.28);}
+  .info-toast button{flex:none;border:0;background:none;padding:4px 2px;color:#9cc0ff;font-size:12.5px;
+    font-weight:800;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0,0,0,0);white-space:nowrap;border:0;}
   .login-note{margin-top:18px;padding:11px 12px;border-radius:8px;display:flex;gap:8px;
     color:var(--muted);background:#f1f5f9;font-size:10.5px;line-height:1.6;}
 
@@ -65,21 +74,122 @@
     box-shadow:0 4px 14px rgba(12,49,94,.05);transition:.15s;}
   .tile:hover{box-shadow:0 10px 24px rgba(12,49,94,.12);border-color:#c3d3e6;}
   .tile.disabled{opacity:.62;}
-  .tile.dragging{opacity:.35;}
-  .tile.drag-over-before{box-shadow:inset 3px 0 0 0 var(--blue);}
-  .tile.drag-over-after{box-shadow:inset -3px 0 0 0 var(--blue);}
-  .tile-drag{position:absolute;top:14px;left:14px;width:26px;height:26px;border-radius:7px;
-    display:grid;place-items:center;border:0;padding:0;color:#7c8ea3;background:#eef2f8;cursor:grab;
-    touch-action:none;user-select:none;-webkit-user-select:none;transition:.15s;}
-  .tile-drag:hover{color:#fff;background:var(--blue);}
-  .tile-drag:active{cursor:grabbing;}
-  .tile-drag:focus-visible{outline:3px solid rgba(37,99,235,.32);outline-offset:2px;}
-  .tile-drag svg{width:15px;height:15px;}
-  .tile-grid.is-dragging .tile:not(.dragging){cursor:pointer;}
-  .hub-heading-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-  .reset-order-btn{border:0;background:none;padding:0;color:var(--blue);font-size:11.5px;
+  .hub-heading-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .link-btn{border:0;background:none;padding:0;color:var(--blue);font-size:11.5px;
     font-weight:800;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
-  .reset-order-btn:hover{color:var(--blue-deep);}
+  .link-btn:hover{color:var(--blue-deep);}
+
+  /* ---------- 並べ替え・非表示（一覧側の入口） ---------- */
+  .edit-open-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:40px;padding:0 16px;
+    border:1.5px solid var(--blue);border-radius:9px;background:#fff;color:var(--blue);
+    font-size:13px;font-weight:800;cursor:pointer;transition:.15s;white-space:nowrap;}
+  .edit-open-btn:hover{background:#eef4ff;}
+  .edit-open-btn:focus-visible{outline:3px solid rgba(37,99,235,.32);outline-offset:2px;}
+  .edit-open-btn svg{width:18px;height:18px;flex:none;}
+  .edit-open-count{padding:2px 8px;border-radius:999px;background:#e4eaf2;color:#41556b;font-size:10.5px;}
+  .hidden-note{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px;padding:12px 14px;
+    border:1px dashed #c7d2dd;border-radius:10px;color:#55697d;background:#f8fafc;font-size:11.5px;line-height:1.6;}
+  .hidden-note svg{width:17px;height:17px;flex:none;color:#7c8ea3;}
+  .hidden-note > span{flex:1;min-width:0;}
+  .tile-empty{grid-column:1/-1;display:grid;justify-items:center;gap:14px;padding:40px 20px;
+    border:1px dashed #c7d2dd;border-radius:14px;background:#fff;color:var(--muted);font-size:13px;text-align:center;}
+  .tile-empty p{margin:0;}
+
+  /* ---------- 並べ替え・非表示の設定画面 ---------- */
+  .edit-bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;margin-bottom:14px;
+    padding:12px 14px;border:1px solid #bcd0f5;border-radius:12px;background:#eaf2ff;
+    box-shadow:0 8px 20px rgba(12,49,94,.10);}
+  .edit-bar-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:none;
+    color:#fff;background:var(--blue);}
+  .edit-bar-icon svg{width:20px;height:20px;}
+  .edit-bar-text{flex:1;min-width:0;}
+  .edit-bar-text strong{display:block;color:var(--navy);font-size:15px;outline:0;}
+  .edit-bar-text span{display:block;margin-top:2px;color:#4b6077;font-size:11.5px;line-height:1.5;}
+  .edit-done-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 18px;
+    border:0;border-radius:9px;background:var(--blue);color:#fff;font-size:13px;font-weight:800;cursor:pointer;
+    white-space:nowrap;flex:none;}
+  .edit-done-btn:hover{background:var(--blue-deep);}
+  .edit-done-btn:focus-visible{outline:3px solid rgba(37,99,235,.32);outline-offset:2px;}
+  .edit-done-btn svg{width:16px;height:16px;}
+  .edit-done-btn.is-large{height:46px;padding:0 30px;font-size:14px;}
+  .edit-guide{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 26px;padding:0;list-style:none;}
+  .edit-guide li{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);
+    border-radius:12px;background:#fff;}
+  .guide-visual{flex:none;display:flex;align-items:center;gap:4px;}
+  .guide-grip{width:30px;height:42px;border-radius:8px;display:grid;place-items:center;
+    color:var(--blue);background:#eef4ff;border:1px solid #c9d8f2;}
+  .guide-grip svg{width:17px;height:17px;}
+  .guide-btn{display:inline-flex;align-items:center;gap:2px;height:26px;padding:0 7px;border:1px solid var(--line);
+    border-radius:6px;background:#fff;color:#41556b;font-size:10.5px;font-weight:800;white-space:nowrap;}
+  .guide-btn svg{width:12px;height:12px;}
+  .edit-guide strong{display:block;color:var(--navy);font-size:12.5px;}
+  .edit-guide .guide-text{display:block;margin-top:2px;color:var(--muted);font-size:11px;line-height:1.6;}
+  .edit-section{scroll-margin-top:96px;}
+  .edit-section + .edit-section{margin-top:30px;}
+  .edit-section-head{display:flex;align-items:baseline;gap:4px 12px;flex-wrap:wrap;margin-bottom:12px;}
+  .edit-section-head h3{margin:0;color:var(--navy);font-size:15px;}
+  .edit-section-head p{margin:0;color:var(--muted);font-size:11.5px;}
+  .edit-count{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:#eef2f8;
+    color:#516276;font-size:11px;vertical-align:1px;}
+  .edit-empty{grid-column:1/-1;margin:0;padding:18px;border:1px dashed #c7d2dd;border-radius:12px;
+    color:var(--muted);background:#f8fafc;font-size:12px;line-height:1.6;text-align:center;}
+  .edit-footer{display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:34px;}
+
+  /* 設定画面のタイル（左端の ⠿ が「つかむ所」） */
+  .etile{position:relative;display:flex;height:96px;border:1.5px solid #c9d8f2;border-radius:12px;
+    background:#fff;box-shadow:0 2px 8px rgba(12,49,94,.05);overflow:hidden;cursor:grab;
+    -webkit-user-select:none;user-select:none;}
+  .etile:hover{border-color:#8fb0f0;}
+  .etile-grip{flex:none;width:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    padding:0;border:0;border-right:1px solid #d6e2f6;color:var(--blue);background:#eef4ff;cursor:grab;
+    font-size:9.5px;font-weight:800;touch-action:none;-webkit-touch-callout:none;transition:background-color .15s,color .15s;}
+  .etile-grip svg{width:20px;height:20px;}
+  .etile-grip:hover{color:#fff;background:var(--blue);}
+  .etile-grip:focus-visible{outline:3px solid rgba(37,99,235,.45);outline-offset:-3px;}
+  .etile-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;gap:8px;
+    padding:11px 12px 10px;}
+  .etile-head{display:flex;align-items:center;gap:9px;min-width:0;}
+  .etile-num{flex:none;min-width:21px;height:21px;padding:0 5px;border-radius:999px;display:grid;place-items:center;
+    color:#fff;background:var(--navy);font-size:11px;font-weight:800;}
+  .etile .tile-icon{width:32px;height:32px;border-radius:9px;}
+  .etile .tile-icon svg{width:17px;height:17px;}
+  .etile-name{min-width:0;color:var(--navy);font-size:13px;font-weight:800;line-height:1.35;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .etile-actions{display:flex;align-items:center;gap:6px;}
+  .etile-btn{display:inline-flex;align-items:center;gap:3px;height:30px;padding:0 9px;border:1px solid var(--line);
+    border-radius:7px;background:#fff;color:#41556b;font-size:11.5px;font-weight:800;cursor:pointer;white-space:nowrap;}
+  .etile-btn svg{width:14px;height:14px;flex:none;}
+  .etile-btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue);background:#f5f8ff;}
+  .etile-btn:disabled{opacity:.38;cursor:default;}
+  .etile-btn:focus-visible{outline:3px solid rgba(37,99,235,.32);outline-offset:1px;}
+  .etile-hide{margin-left:auto;}
+  /* 非表示にしたアプリ（点線・グレーで「一覧に出ていない」ことを示す） */
+  .etile.is-off{height:auto;min-height:62px;cursor:default;border-style:dashed;border-color:#c7d2dd;
+    background:#f7f9fc;box-shadow:none;}
+  .etile.is-off .etile-body{flex-direction:row;align-items:center;justify-content:flex-start;}
+  .etile.is-off .etile-head{flex:1;}
+  .etile.is-off .tile-icon{filter:grayscale(1);opacity:.5;}
+  .etile.is-off .etile-name{color:#6b7c8f;}
+  .etile-btn.etile-show{border-color:var(--blue);color:var(--blue);}
+  .etile-btn.etile-show:hover{color:#fff;background:var(--blue);}
+  /* ドラッグ中：元の場所は点線の空き枠になり、つかんだタイルが指・マウスについてくる */
+  .etile.is-placeholder{border:2px dashed #7aa2f0;background:#eaf1fe;box-shadow:none;}
+  .etile.is-placeholder > *{visibility:hidden;}
+  .etile-ghost{position:fixed;left:0;top:0;z-index:1000;margin:0;pointer-events:none;border-color:var(--blue);
+    box-shadow:0 22px 44px rgba(12,49,94,.28);opacity:.97;}
+  body.is-sorting, body.is-sorting *{cursor:grabbing !important;}
+  body.is-sorting{-webkit-user-select:none;user-select:none;}
+  .etile.just-moved{animation:etile-flash 1.1s ease-out;}
+  @keyframes etile-flash{
+    0%{box-shadow:0 0 0 4px rgba(37,99,235,.55);}
+    100%{box-shadow:0 0 0 14px rgba(37,99,235,0);}
+  }
+  /* 設定画面を開いた直後に少しだけ揺らして、動かせることを目で分かるようにする */
+  @keyframes etile-wiggle{0%,100%{rotate:0deg;}25%{rotate:-.9deg;}75%{rotate:.9deg;}}
+  .edit-grid.is-wiggling .etile{animation:etile-wiggle .26s ease-in-out 3;}
+  @media (prefers-reduced-motion:reduce){
+    .edit-grid.is-wiggling .etile,.etile.just-moved{animation:none;}
+  }
   .tile-icon{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;
     color:#fff;flex:none;}
   .tile-icon svg{width:23px;height:23px;}
@@ -114,15 +224,36 @@
   .tile-open:hover{background:var(--blue-deep);}
   .tile-open.is-disabled{background:#e4e9ef;color:#93a3b4;pointer-events:none;}
 
-  @media (max-width:900px){ .tile-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+  @media (max-width:900px){
+    .tile-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .edit-guide{grid-template-columns:1fr;gap:8px;}
+  }
   @media (max-width:620px){
     .tile-grid{grid-template-columns:1fr;}
-    .tile.drag-over-before{box-shadow:inset 0 3px 0 0 var(--blue);}
-    .tile.drag-over-after{box-shadow:inset 0 -3px 0 0 var(--blue);}
     .topbar{padding:0 14px;} .hub-main{padding:26px 14px 44px;}
     .office-pill{display:none;}
     /* 狭い画面でボタンの文字が2行に折り返さないよう、余白と文字を詰めて1行に収める */
     .logout-btn{padding:0 10px;font-size:10.5px;white-space:nowrap;flex:none;}
+    /* 320px幅などでヘッダーが画面からはみ出し、横スクロールが出るのを防ぐ */
+    .topbar{gap:10px;}
+    .topbar .brand-row{flex:1 1 auto;min-width:0;gap:10px;}
+    .topbar .brand-row > div:last-child{min-width:0;}
+    .topbar .brand-row strong,.topbar .brand-row span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    /* 「並べ替え・非表示」は指で押しやすいよう横いっぱいにする */
+    .edit-open-btn{width:100%;height:46px;}
+    .edit-bar{padding:10px 10px 10px 12px;gap:10px;}
+    .edit-bar-icon{display:none;}
+    .edit-bar-text strong{font-size:14px;}
+    .edit-bar-text span{font-size:10.5px;}
+    .edit-guide li{padding:9px 12px;gap:10px;}
+    .edit-guide .guide-text{font-size:10.5px;line-height:1.55;}
+    /* 1列のときは「前へ・後ろへ」の矢印を上下向きにする（説明欄の見本も同じ向きに） */
+    .etile-btn[data-action="prev"] svg,.etile-btn[data-action="next"] svg,.guide-chev{rotate:90deg;}
+  }
+  @media (max-width:360px){
+    .topbar .brand-mark{width:36px;height:36px;font-size:16px;}
+    .topbar .brand-row strong{font-size:14px;}
+    .etile-btn{padding:0 7px;}
   }
 </style>
 </head>
@@ -161,22 +292,92 @@
     <button class="logout-btn" id="logout-btn">営業所を変更</button>
   </header>
   <main class="hub-main">
-    <div class="hub-heading">
-      <div class="hub-heading-row">
-        <h2>アプリを選択してください</h2>
-        <button type="button" class="reset-order-btn" id="reset-order-btn">並び順をリセット</button>
+    <!-- 通常の一覧 -->
+    <div id="normal-view">
+      <div class="hub-heading">
+        <div class="hub-heading-row">
+          <h2>アプリを選択してください</h2>
+          <button type="button" class="edit-open-btn" id="edit-open-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+            並べ替え・非表示
+            <span class="edit-open-count hidden" id="edit-open-count"></span>
+          </button>
+        </div>
+        <p>「このアプリを開く」を押すと、各業務アプリが新しいタブで開きます。よく使うアプリを前に並べたり、使わないアプリを隠したりするときは「並べ替え・非表示」を押してください（この端末に記憶されます）。</p>
       </div>
-      <p>「このアプリを開く」を押すと、各業務アプリが新しいタブで開きます。左上の <span aria-hidden="true">⠿</span> をドラッグして、青い線を目印に手を離すと並べ替えできます。スマートフォンでは上下へドラッグ、キーボードでは矢印キーで移動できます（この端末に記憶されます）。</p>
+      <div class="tile-grid" id="tile-grid"></div>
+      <div class="hidden-note hidden" id="hidden-note"></div>
     </div>
-    <div class="tile-grid" id="tile-grid"></div>
+
+    <!-- 並べ替え・非表示の設定 -->
+    <div id="edit-view" class="hidden">
+      <div class="edit-bar" id="edit-bar">
+        <div class="edit-bar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+        </div>
+        <div class="edit-bar-text">
+          <strong id="edit-title" tabindex="-1">並べ替え・非表示の設定中</strong>
+          <span>変更はこの端末に自動で保存されます。終わったら「完了」を押してください。</span>
+        </div>
+        <button type="button" class="edit-done-btn" data-action="done">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          完了
+        </button>
+      </div>
+      <ol class="edit-guide">
+        <li>
+          <span class="guide-visual" aria-hidden="true">
+            <span class="guide-grip"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>
+          </span>
+          <span><strong>つかんで動かす</strong><span class="guide-text">左端の「<span aria-hidden="true">⠿ </span>移動」をつかんだまま動かすと、ほかのアプリがよけて場所が空きます。</span></span>
+        </li>
+        <li>
+          <span class="guide-visual" aria-hidden="true">
+            <span class="guide-btn"><svg class="guide-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>前へ</span>
+            <span class="guide-btn">後ろへ<svg class="guide-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+          </span>
+          <span><strong>ボタンで動かす</strong><span class="guide-text">「前へ」「後ろへ」を押すと、1つずつ移動できます。</span></span>
+        </li>
+        <li>
+          <span class="guide-visual" aria-hidden="true">
+            <span class="guide-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A9.9 9.9 0 0 1 12 5c5 0 9 4.5 10 7-.4 1-1.2 2.3-2.4 3.5M6.6 6.6C4.4 8 2.8 10.2 2 12c1 2.5 5 7 10 7 1.9 0 3.6-.6 5.1-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>隠す</span>
+          </span>
+          <span><strong>使わないアプリは隠す</strong><span class="guide-text">一覧に出なくなります。下の「非表示のアプリ」から、いつでも戻せます。</span></span>
+        </li>
+      </ol>
+      <section class="edit-section" aria-labelledby="visible-title">
+        <div class="edit-section-head">
+          <h3 id="visible-title">表示するアプリ<span class="edit-count" id="visible-count"></span></h3>
+          <p>この順番で一覧に並びます</p>
+        </div>
+        <div class="tile-grid edit-grid" id="edit-grid"></div>
+      </section>
+      <section class="edit-section" id="hidden-section" aria-labelledby="hidden-title">
+        <div class="edit-section-head">
+          <h3 id="hidden-title">非表示のアプリ<span class="edit-count" id="hidden-count"></span></h3>
+          <p>ここにあるアプリは一覧に表示されません</p>
+        </div>
+        <div class="tile-grid edit-grid" id="hidden-grid"></div>
+      </section>
+      <div class="edit-footer">
+        <button type="button" class="edit-done-btn is-large" data-action="done">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          完了して一覧に戻る
+        </button>
+        <button type="button" class="link-btn" id="reset-btn">最初の状態（並び順・表示）に戻す</button>
+      </div>
+    </div>
   </main>
 </div>
+<div class="toast-stack" id="toast-stack"></div>
+<div class="sr-only" id="live-region" aria-live="polite"></div>
 
 <script>
 (function(){
   'use strict';
   var SESSION_KEY = 'taiyo_portal_session';
   var ORDER_KEY = 'taiyo_portal_tile_order';
+  var HIDDEN_KEY = 'taiyo_portal_hidden_apps';
 
   var OFFICES = [
     '小倉営業所','小倉南営業所','八幡西営業所','八幡東営業所','行橋営業所','田川営業所',
@@ -202,6 +403,13 @@
     '<circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/>' +
     '<circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/>' +
     '<circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+  // 並べ替え・非表示の設定画面で使うアイコン
+  var UI_ICONS = {
+    prev: '<path d="m15 18-6-6 6-6"/>',
+    next: '<path d="m9 18 6-6-6-6"/>',
+    eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    eyeOff: '<path d="M3 3l18 18"/><path d="M10.6 5.1A9.9 9.9 0 0 1 12 5c5 0 9 4.5 10 7-.4 1-1.2 2.3-2.4 3.5M6.6 6.6C4.4 8 2.8 10.2 2 12c1 2.5 5 7 10 7 1.9 0 3.6-.6 5.1-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'
+  };
 
   var APPS = [
     { name:'見積・提案書作成', desc:'御見積書・価格改定・比較表の作成', icon:'document', color:'c-blue',
@@ -313,30 +521,28 @@
   var officePill = document.getElementById('office-pill');
   var tileGrid = document.getElementById('tile-grid');
   var logoutBtn = document.getElementById('logout-btn');
-  var resetOrderBtn = document.getElementById('reset-order-btn');
-  var dragName = null;
-  var dropTargetName = null;
-  var dropAfter = false;
-  var pointerDragId = null;
+  var normalView = document.getElementById('normal-view');
+  var editView = document.getElementById('edit-view');
+  var editOpenBtn = document.getElementById('edit-open-btn');
+  var editOpenCount = document.getElementById('edit-open-count');
+  var hiddenNote = document.getElementById('hidden-note');
+  var editBar = document.getElementById('edit-bar');
+  var editTitle = document.getElementById('edit-title');
+  var editGrid = document.getElementById('edit-grid');
+  var hiddenGrid = document.getElementById('hidden-grid');
+  var hiddenSection = document.getElementById('hidden-section');
+  var visibleCount = document.getElementById('visible-count');
+  var hiddenCount = document.getElementById('hidden-count');
+  var resetBtn = document.getElementById('reset-btn');
+  var toastStack = document.getElementById('toast-stack');
+  var liveRegion = document.getElementById('live-region');
   var memoryOrder = null;
-
-  function clearDragOverClasses(){
-    Array.prototype.forEach.call(tileGrid.querySelectorAll('.tile'), function(t){
-      t.classList.remove('drag-over-before', 'drag-over-after');
-    });
-  }
-
-  function clearDragState(){
-    Array.prototype.forEach.call(tileGrid.querySelectorAll('.tile'), function(t){
-      t.classList.remove('dragging');
-    });
-    clearDragOverClasses();
-    tileGrid.classList.remove('is-dragging');
-    dragName = null;
-    dropTargetName = null;
-    dropAfter = false;
-    pointerDragId = null;
-  }
+  var memoryHidden = null;
+  var editing = false;
+  var editChanged = false;
+  var sort = null;          // ドラッグで並べ替えている最中の状態
+  var settling = false;     // 手を離したタイルが置き場所へ収まるまでの短い間
+  var suppressClick = false;
 
   var saveWarningTimer = null;
   function showSaveWarning(message){
@@ -346,12 +552,47 @@
       el.id = 'save-warning-toast';
       el.className = 'save-warning-toast hidden';
       el.setAttribute('role', 'alert');
-      document.body.appendChild(el);
+      toastStack.appendChild(el);
     }
     el.textContent = message;
     el.classList.remove('hidden');
     if (saveWarningTimer) window.clearTimeout(saveWarningTimer);
     saveWarningTimer = window.setTimeout(function(){ el.classList.add('hidden'); }, 6000);
+  }
+
+  // 「隠しました」「戻しました」などのお知らせ。action を渡すと「元に戻す」などのボタンを付ける。
+  var infoToast = null;
+  var infoToastTimer = null;
+  function showToast(message, action){
+    if (!infoToast) {
+      infoToast = document.createElement('div');
+      infoToast.className = 'info-toast hidden';
+      infoToast.setAttribute('role', 'status');
+      toastStack.insertBefore(infoToast, toastStack.firstChild);
+    }
+    infoToast.innerHTML = '';
+    var text = document.createElement('span');
+    text.textContent = message;
+    infoToast.appendChild(text);
+    if (action) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = action.label;
+      btn.addEventListener('click', function(){ hideToast(); action.run(); });
+      infoToast.appendChild(btn);
+    }
+    infoToast.classList.remove('hidden');
+    if (infoToastTimer) window.clearTimeout(infoToastTimer);
+    infoToastTimer = window.setTimeout(hideToast, action ? 8000 : 4000);
+  }
+  function hideToast(){
+    if (infoToast) infoToast.classList.add('hidden');
+  }
+
+  // 画面読み上げソフト向けに、並べ替えた結果を読み上げる
+  function announce(message){
+    liveRegion.textContent = '';
+    window.setTimeout(function(){ liveRegion.textContent = message; }, 50);
   }
 
   function loadOrder(){
@@ -371,6 +612,22 @@
       showSaveWarning('並び順を保存できませんでした。この端末の空き容量、またはプライベート/シークレットモードでないことをご確認ください。');
     }
   }
+  // 非表示にしたアプリの名前の一覧。並び順と同じく、保存できなくてもこの画面の間は覚えておく。
+  function loadHidden(){
+    if (memoryHidden) return memoryHidden.slice();
+    try {
+      var saved = JSON.parse(localStorage.getItem(HIDDEN_KEY));
+      return Array.isArray(saved) ? saved.filter(function(name){ return typeof name === 'string'; }) : [];
+    } catch(e){ return []; }
+  }
+  function saveHidden(names){
+    memoryHidden = names.slice();
+    try {
+      localStorage.setItem(HIDDEN_KEY, JSON.stringify(names));
+    } catch(e){
+      showSaveWarning('表示・非表示の設定を保存できませんでした。この端末の空き容量、またはプライベート/シークレットモードでないことをご確認ください。');
+    }
+  }
   function orderedApps(){
     var saved = loadOrder();
     if (!saved) return APPS.slice();
@@ -383,36 +640,26 @@
     APPS.forEach(function(a){ if (byName[a.name]) result.push(a); }); // 新規追加分は末尾へ
     return result;
   }
-
-  function moveApp(name, targetName, after){
-    var names = orderedApps().map(function(a){ return a.name; });
-    var from = names.indexOf(name);
-    if (from < 0 || name === targetName) return false;
-    names.splice(from, 1);
-    var insertAt = names.indexOf(targetName);
-    if (insertAt < 0) return false;
-    if (after) insertAt += 1;
-    names.splice(insertAt, 0, name);
-    saveOrder(names);
-    renderTiles();
-    return true;
+  function appNames(apps){
+    return apps.map(function(a){ return a.name; });
   }
-
-  function markDropTarget(tile, clientX, clientY){
-    if (!tile || tile.dataset.name === dragName) {
-      clearDragOverClasses();
-      dropTargetName = null;
-      return;
-    }
-    var rect = tile.getBoundingClientRect();
-    var columns = getComputedStyle(tileGrid).gridTemplateColumns.trim().split(/\s+/).length;
-    var after = columns === 1
-      ? (clientY - rect.top) > rect.height / 2
-      : (clientX - rect.left) > rect.width / 2;
-    clearDragOverClasses();
-    tile.classList.add(after ? 'drag-over-after' : 'drag-over-before');
-    dropTargetName = tile.dataset.name;
-    dropAfter = after;
+  // 並び順どおりに「表示するアプリ」と「非表示のアプリ」に分ける（新しく追加したアプリは表示する側）
+  function splitApps(){
+    var hidden = loadHidden();
+    var result = { shown: [], off: [] };
+    orderedApps().forEach(function(app){
+      (hidden.indexOf(app.name) >= 0 ? result.off : result.shown).push(app);
+    });
+    return result;
+  }
+  // 表示中のアプリの新しい並びを、非表示のアプリの位置は動かさずに全体の並び順へ反映する。
+  // こうしておくと、隠したアプリを戻したときに、もとの位置あたりに戻る。
+  function saveShownOrder(shownNames){
+    var hidden = loadHidden();
+    var i = 0;
+    saveOrder(appNames(orderedApps()).map(function(name){
+      return hidden.indexOf(name) >= 0 ? name : shownNames[i++];
+    }));
   }
 
   OFFICES.forEach(function(name){
@@ -449,22 +696,39 @@
       return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch];
     });
   }
+  function appIconHtml(app){
+    return '<div class="tile-icon ' + app.color + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      (ICONS[app.icon] || '') + '</svg></div>';
+  }
+  function uiIcon(name){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      UI_ICONS[name] + '</svg>';
+  }
+  function findTile(container, name){
+    return Array.prototype.find.call(container.querySelectorAll('.etile'), function(t){ return t.dataset.name === name; }) || null;
+  }
+  function gridColumns(grid){
+    return getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length;
+  }
+  function prefersReducedMotion(){
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
 
+  // ---------- 通常の一覧 ----------
   function renderTiles(){
+    var parts = splitApps();
     tileGrid.innerHTML = '';
-    orderedApps().forEach(function(app){
+    parts.shown.forEach(function(app){
       var usageItems = (app.usage || []).map(function(line){
         return '<li>' + escapeHtml(line) + '</li>';
       }).join('');
-      var iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[app.icon] || '') + '</svg>';
       var el = document.createElement('div');
       el.className = 'tile' + (app.ready ? '' : ' disabled');
       el.dataset.name = app.name;
       el.innerHTML =
-        '<button type="button" class="tile-drag" draggable="true" title="ドラッグして並べ替え" aria-label="' + escapeHtml(app.name) + 'を並べ替え（矢印キーでも移動できます）">' + GRIP_SVG + '</button>' +
         '<span class="tile-badge ' + (app.ready ? 'badge-ready' : 'badge-soon') + '">' +
           (app.ready ? '利用可能' : '準備中') + '</span>' +
-        '<div class="tile-icon ' + app.color + '">' + iconSvg + '</div>' +
+        appIconHtml(app) +
         '<h3>' + escapeHtml(app.name) + '</h3>' +
         '<p class="tile-desc">' + escapeHtml(app.desc) + '</p>' +
         (usageItems ? '<details class="tile-usage"><summary>使い方を見る</summary><ul>' + usageItems + '</ul></details>' : '') +
@@ -475,109 +739,562 @@
         '</div>';
       tileGrid.appendChild(el);
     });
+    if (!parts.shown.length) {
+      var empty = document.createElement('div');
+      empty.className = 'tile-empty';
+      empty.innerHTML = '<p>表示するアプリがありません。「並べ替え・非表示」から、表示するアプリを選んでください。</p>' +
+        '<button type="button" class="edit-open-btn" data-action="open-edit">並べ替え・非表示を開く</button>';
+      tileGrid.appendChild(empty);
+    }
+    // 隠しているアプリがあることを、ボタンと一覧の下で知らせる（どこへ行ったか分からなくならないように）
+    if (parts.off.length) {
+      editOpenCount.textContent = '非表示 ' + parts.off.length + '件';
+      editOpenCount.classList.remove('hidden');
+      hiddenNote.innerHTML = uiIcon('eyeOff') +
+        '<span>非表示にしているアプリ（' + parts.off.length + '件）：' +
+        parts.off.map(function(a){ return escapeHtml(a.name); }).join('、') + '</span>' +
+        '<button type="button" class="link-btn" data-action="open-edit-hidden">表示に戻す</button>';
+      hiddenNote.classList.remove('hidden');
+    } else {
+      editOpenCount.classList.add('hidden');
+      hiddenNote.classList.add('hidden');
+      hiddenNote.innerHTML = '';
+    }
   }
 
-  // ドラッグ&ドロップでタイルを並べ替え、この端末（localStorage）に順序を保存する
-  tileGrid.addEventListener('dragstart', function(e){
-    var handle = e.target.closest('.tile-drag');
-    var tile = handle && handle.closest('.tile');
-    if (!tile) { e.preventDefault(); return; }
-    dragName = tile.dataset.name;
-    tile.classList.add('dragging');
-    tileGrid.classList.add('is-dragging');
-    e.dataTransfer.effectAllowed = 'move';
-    try { e.dataTransfer.setData('text/plain', dragName); } catch(err){}
-  });
-  tileGrid.addEventListener('dragenter', function(e){
-    if (dragName) e.preventDefault();
-  });
-  tileGrid.addEventListener('dragover', function(e){
-    if (!dragName) return;
-    var tile = e.target.closest('.tile');
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    markDropTarget(tile, e.clientX, e.clientY);
-  });
-  tileGrid.addEventListener('dragleave', function(e){
-    if (!dragName) return;
-    if (!tileGrid.contains(e.relatedTarget)) {
-      clearDragOverClasses();
-      dropTargetName = null;
+  // ---------- 並べ替え・非表示の設定画面 ----------
+  function renderEditor(){
+    var parts = splitApps();
+    var last = parts.shown.length - 1;
+    editGrid.innerHTML = '';
+    parts.shown.forEach(function(app, i){
+      var name = escapeHtml(app.name);
+      var el = document.createElement('div');
+      el.className = 'etile';
+      el.dataset.name = app.name;
+      el.innerHTML =
+        '<button type="button" class="etile-grip" title="つかんだまま動かすと並べ替えできます" aria-label="' + name + 'を並べ替え（ドラッグ、または矢印キーで移動）">' +
+          GRIP_SVG + '<span aria-hidden="true">移動</span></button>' +
+        '<div class="etile-body">' +
+          '<div class="etile-head">' +
+            '<span class="etile-num" aria-hidden="true">' + (i + 1) + '</span>' +
+            appIconHtml(app) +
+            '<span class="etile-name">' + name + '</span>' +
+          '</div>' +
+          '<div class="etile-actions">' +
+            '<button type="button" class="etile-btn" data-action="prev" aria-label="' + name + 'を1つ前へ"' + (i === 0 ? ' disabled' : '') + '>' +
+              uiIcon('prev') + '前へ</button>' +
+            '<button type="button" class="etile-btn" data-action="next" aria-label="' + name + 'を1つ後ろへ"' + (i === last ? ' disabled' : '') + '>' +
+              '後ろへ' + uiIcon('next') + '</button>' +
+            '<button type="button" class="etile-btn etile-hide" data-action="hide" aria-label="' + name + 'を隠す">' +
+              uiIcon('eyeOff') + '隠す</button>' +
+          '</div>' +
+        '</div>';
+      editGrid.appendChild(el);
+    });
+    if (!parts.shown.length) {
+      editGrid.innerHTML = '<p class="edit-empty">表示するアプリがありません。下の「非表示のアプリ」で「表示する」を押すと、一覧に戻ります。</p>';
     }
-  });
-  tileGrid.addEventListener('drop', function(e){
-    if (!dragName || !dropTargetName) return;
-    e.preventDefault();
-    var sourceName = dragName;
-    var targetName = dropTargetName;
-    var after = dropAfter;
-    clearDragState();
-    moveApp(sourceName, targetName, after);
-  });
-  tileGrid.addEventListener('dragend', function(){
-    clearDragState();
-  });
+    hiddenGrid.innerHTML = '';
+    parts.off.forEach(function(app){
+      var name = escapeHtml(app.name);
+      var el = document.createElement('div');
+      el.className = 'etile is-off';
+      el.dataset.name = app.name;
+      el.innerHTML =
+        '<div class="etile-body">' +
+          '<div class="etile-head">' + appIconHtml(app) + '<span class="etile-name">' + name + '</span></div>' +
+          '<button type="button" class="etile-btn etile-show" data-action="show" aria-label="' + name + 'を表示する">' +
+            uiIcon('eye') + '表示する</button>' +
+        '</div>';
+      hiddenGrid.appendChild(el);
+    });
+    if (!parts.off.length) {
+      hiddenGrid.innerHTML = '<p class="edit-empty">隠しているアプリはありません。「隠す」を押したアプリが、ここに入ります。</p>';
+    }
+    visibleCount.textContent = parts.shown.length + '件';
+    hiddenCount.textContent = parts.off.length + '件';
+  }
 
-  // HTML5 のドラッグが動かないスマートフォン向けに Pointer Events でも並べ替える。
-  tileGrid.addEventListener('pointerdown', function(e){
-    var handle = e.target.closest('.tile-drag');
-    var tile = handle && handle.closest('.tile');
-    if (!tile || e.pointerType === 'mouse') return;
-    e.preventDefault();
-    dragName = tile.dataset.name;
-    pointerDragId = e.pointerId;
-    tile.classList.add('dragging');
-    tileGrid.classList.add('is-dragging');
-    try { handle.setPointerCapture(e.pointerId); } catch(err){}
-  });
-  tileGrid.addEventListener('pointermove', function(e){
-    if (pointerDragId !== e.pointerId || !dragName) return;
-    e.preventDefault();
-    var hit = document.elementFromPoint(e.clientX, e.clientY);
-    markDropTarget(hit && hit.closest('.tile'), e.clientX, e.clientY);
-  });
-  tileGrid.addEventListener('pointerup', function(e){
-    if (pointerDragId !== e.pointerId || !dragName) return;
-    var sourceName = dragName;
-    var targetName = dropTargetName;
-    var after = dropAfter;
-    clearDragState();
-    if (targetName) moveApp(sourceName, targetName, after);
-  });
-  tileGrid.addEventListener('pointercancel', function(e){
-    if (pointerDragId === e.pointerId) clearDragState();
-  });
+  function render(){
+    if (editing) renderEditor(); else renderTiles();
+  }
 
-  // マウスを使えない利用者も、ハンドルにフォーカスして矢印キーで移動できる。
-  tileGrid.addEventListener('keydown', function(e){
-    var handle = e.target.closest('.tile-drag');
-    if (!handle || !/^Arrow(Left|Right|Up|Down)$/.test(e.key)) return;
-    var tile = handle.closest('.tile');
-    var names = orderedApps().map(function(a){ return a.name; });
-    var from = names.indexOf(tile.dataset.name);
-    var columns = getComputedStyle(tileGrid).gridTemplateColumns.trim().split(/\s+/).length;
-    var delta = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : e.key === 'ArrowUp' ? -columns : columns;
+  function captureRects(container){
+    var rects = {};
+    Array.prototype.forEach.call(container.querySelectorAll('.etile'), function(el){
+      rects[el.dataset.name] = el.getBoundingClientRect();
+    });
+    return rects;
+  }
+  // 場所が変わったタイルを、もとの場所からすべるように動かす（どこへ動いたか目で追えるように）
+  function playFlip(container, before){
+    if (prefersReducedMotion()) return;
+    var tiles = Array.prototype.slice.call(container.querySelectorAll('.etile'));
+    tiles.forEach(function(el){ el.style.transition = 'none'; el.style.transform = ''; });
+    var moved = [];
+    tiles.forEach(function(el){
+      var prev = before[el.dataset.name];
+      if (!prev || el.classList.contains('is-placeholder')) return;
+      var now = el.getBoundingClientRect();
+      var dx = prev.left - now.left;
+      var dy = prev.top - now.top;
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+      el.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      moved.push(el);
+    });
+    if (!moved.length) return;
+    void container.offsetWidth;
+    moved.forEach(function(el){
+      el.style.transition = 'transform .2s ease';
+      el.style.transform = '';
+    });
+  }
+  function flashTile(container, name){
+    var el = findTile(container, name);
+    if (!el) return;
+    el.classList.remove('just-moved');
+    void el.offsetWidth;
+    el.classList.add('just-moved');
+    window.setTimeout(function(){ el.classList.remove('just-moved'); }, 1200);
+  }
+
+  // 「前へ」「後ろへ」・矢印キーで動かす
+  function moveShown(name, delta, focusOn){
+    cancelSort();
+    var names = appNames(splitApps().shown);
+    var from = names.indexOf(name);
+    if (from < 0) return;
     var to = Math.max(0, Math.min(names.length - 1, from + delta));
-    if (from < 0 || to === from) return;
+    if (to === from) return;
+    names.splice(from, 1);
+    names.splice(to, 0, name);
+    var before = captureRects(editGrid);
+    saveShownOrder(names);
+    editChanged = true;
+    renderEditor();
+    playFlip(editGrid, before);
+    flashTile(editGrid, name);
+    focusInTile(name, focusOn);
+    announce('「' + name + '」を' + (to + 1) + '番目に移動しました');
+  }
+  // 描き直したあとも同じアプリの同じボタンにフォーカスを戻し、続けて押せるようにする
+  function focusInTile(name, focusOn){
+    var tile = findTile(editGrid, name);
+    if (!tile) return;
+    var target = focusOn === 'grip'
+      ? tile.querySelector('.etile-grip')
+      : tile.querySelector('[data-action="' + focusOn + '"]');
+    if (!target || target.disabled) {
+      target = tile.querySelector('[data-action="' + (focusOn === 'prev' ? 'next' : 'prev') + '"]:not(:disabled)') ||
+        tile.querySelector('.etile-grip');
+    }
+    target.focus({ preventScroll: true });
+    // 動いた先が画面の外（上の固定バーの裏など）なら、見える所までスクロールする
+    window.setTimeout(function(){
+      if (!tile.isConnected) return;
+      var rect = tile.getBoundingClientRect();
+      var top = Math.max(0, editBar.getBoundingClientRect().bottom) + 8;
+      if (rect.top < top) window.scrollBy({ top: rect.top - top, behavior: 'smooth' });
+      else if (rect.bottom > window.innerHeight - 8) window.scrollBy({ top: rect.bottom - window.innerHeight + 8, behavior: 'smooth' });
+    }, prefersReducedMotion() ? 0 : 220);
+  }
+
+  function hideApp(name){
+    cancelSort();
+    var hidden = loadHidden();
+    if (hidden.indexOf(name) >= 0) return;
+    var index = appNames(splitApps().shown).indexOf(name);
+    var before = captureRects(editGrid);
+    hidden.push(name);
+    saveHidden(hidden);
+    editChanged = true;
+    render();
+    if (editing) {
+      playFlip(editGrid, before);
+      flashTile(hiddenGrid, name);
+      // 押したボタンは消えるので、同じ位置に来たアプリの「隠す」へフォーカスを移す
+      var hides = editGrid.querySelectorAll('[data-action="hide"]');
+      var next = hides[Math.min(index, hides.length - 1)] || hiddenGrid.querySelector('[data-action="show"]');
+      if (next) next.focus({ preventScroll: true });
+    }
+    showToast('「' + name + '」を非表示にしました', { label: '元に戻す', run: function(){ showApp(name); } });
+  }
+
+  function showApp(name){
+    cancelSort();
+    var hidden = loadHidden();
+    var at = hidden.indexOf(name);
+    if (at < 0) return;
+    var offIndex = appNames(splitApps().off).indexOf(name);
+    var before = captureRects(editGrid);
+    hidden.splice(at, 1);
+    saveHidden(hidden);
+    editChanged = true;
+    render();
+    var position = appNames(splitApps().shown).indexOf(name) + 1;
+    if (editing) {
+      playFlip(editGrid, before);
+      flashTile(editGrid, name);
+      var shows = hiddenGrid.querySelectorAll('[data-action="show"]');
+      var tile = findTile(editGrid, name);
+      var next = shows[Math.min(offIndex, shows.length - 1)] || (tile && tile.querySelector('.etile-grip')) || editTitle;
+      next.focus({ preventScroll: true });
+    }
+    showToast('「' + name + '」を表示に戻しました（' + position + '番目）');
+  }
+
+  function setEditing(on){
+    editing = on;
+    normalView.classList.toggle('hidden', on);
+    editView.classList.toggle('hidden', !on);
+  }
+  function openEditor(goToHidden){
+    cancelSort();
+    editChanged = false;
+    setEditing(true);
+    renderEditor();
+    if (goToHidden) hiddenSection.scrollIntoView({ block: 'start' });
+    else window.scrollTo(0, 0);
+    editTitle.focus({ preventScroll: true });
+    if (!prefersReducedMotion()) {
+      editGrid.classList.add('is-wiggling');
+      window.setTimeout(function(){ editGrid.classList.remove('is-wiggling'); }, 900);
+    }
+  }
+  function closeEditor(){
+    cancelSort();
+    setEditing(false);
+    renderTiles();
+    window.scrollTo(0, 0);
+    editOpenBtn.focus({ preventScroll: true });
+    if (editChanged) showToast('並べ替え・非表示の設定を、一覧に反映しました');
+    else hideToast();
+    editChanged = false;
+  }
+
+  editOpenBtn.addEventListener('click', function(){ openEditor(false); });
+  tileGrid.addEventListener('click', function(e){
+    if (e.target.closest('[data-action="open-edit"]')) openEditor(false);
+  });
+  hiddenNote.addEventListener('click', function(e){
+    if (e.target.closest('[data-action="open-edit-hidden"]')) openEditor(true);
+  });
+  Array.prototype.forEach.call(editView.querySelectorAll('[data-action="done"]'), function(btn){
+    btn.addEventListener('click', closeEditor);
+  });
+  editGrid.addEventListener('click', function(e){
+    var btn = e.target.closest('button');
+    if (!btn || !editGrid.contains(btn)) return;
+    var tile = btn.closest('.etile');
+    if (!tile) return;
+    if (btn.classList.contains('etile-grip')) {
+      // キーボードで ⠿ を押したときは矢印キーで動かせることを知らせる（マウス・指で押したときは pointerup 側で案内）
+      if (e.detail === 0) showToast('矢印キー（← → ↑ ↓）で並べ替えできます');
+      return;
+    }
+    var name = tile.dataset.name;
+    var action = btn.dataset.action;
+    if (action === 'prev') moveShown(name, -1, 'prev');
+    else if (action === 'next') moveShown(name, 1, 'next');
+    else if (action === 'hide') hideApp(name);
+  });
+  // マウスを使えない利用者も、⠿ にフォーカスして矢印キーで移動できる
+  editGrid.addEventListener('keydown', function(e){
+    var grip = e.target.closest('.etile-grip');
+    if (!grip || sort) return;
+    var columns = gridColumns(editGrid);
+    var delta = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -columns, ArrowDown: columns, Home: -Infinity, End: Infinity }[e.key];
+    if (!delta) return;
     e.preventDefault();
-    var name = names[from];
-    var targetName = names[to];
-    if (!moveApp(name, targetName, to > from)) return;
-    var moved = Array.prototype.find.call(tileGrid.querySelectorAll('.tile'), function(t){ return t.dataset.name === name; });
-    if (moved) moved.querySelector('.tile-drag').focus();
+    moveShown(grip.closest('.etile').dataset.name, delta, 'grip');
+  });
+  hiddenGrid.addEventListener('click', function(e){
+    var btn = e.target.closest('[data-action="show"]');
+    if (btn) showApp(btn.closest('.etile').dataset.name);
   });
 
-  resetOrderBtn.addEventListener('click', function(){
-    memoryOrder = APPS.map(function(a){ return a.name; });
-    try { localStorage.removeItem(ORDER_KEY); }
-    catch(e){ showSaveWarning('保存済みの並び順を削除できませんでした。この画面では初期順に戻しましたが、次回は以前の順序で開く可能性があります。'); }
-    renderTiles();
+  resetBtn.addEventListener('click', function(){
+    if (!window.confirm('並び順と表示・非表示を、最初の状態に戻しますか？')) return;
+    cancelSort();
+    var before = captureRects(editGrid);
+    memoryOrder = appNames(APPS);
+    memoryHidden = [];
+    try {
+      localStorage.removeItem(ORDER_KEY);
+      localStorage.removeItem(HIDDEN_KEY);
+    } catch(e){
+      showSaveWarning('保存済みの設定を削除できませんでした。この画面では最初の状態に戻しましたが、次回は以前の設定で開く可能性があります。');
+    }
+    editChanged = true;
+    renderEditor();
+    playFlip(editGrid, before);
+    showToast('最初の状態に戻しました');
   });
+
+  // ---------- ドラッグで並べ替え（マウス・指・ペン共通） ----------
+  // つかんだタイルが指やマウスについてきて、ほかのタイルはよけて場所を空ける。
+  // 手を離すと、点線の空き枠の位置に入る。Esc キーで取りやめ。
+  function shownTiles(){
+    return Array.prototype.slice.call(editGrid.querySelectorAll('.etile'));
+  }
+
+  editGrid.addEventListener('pointerdown', function(e){
+    if (sort || settling) return;
+    var tile = e.target.closest('.etile');
+    if (!tile || !editGrid.contains(tile)) return;
+    var onGrip = !!e.target.closest('.etile-grip');
+    if (e.pointerType === 'mouse') {
+      // マウスはタイルのどこをつかんでもよい（ボタンの上は除く）
+      if (e.button !== 0 || (!onGrip && e.target.closest('button'))) return;
+    } else if (!onGrip) {
+      // 指・ペンは ⠿ からだけ。タイルの上を指でなぞったときは、ふつうに画面をスクロールできるようにする
+      return;
+    }
+    e.preventDefault();
+    sort = {
+      pointerId: e.pointerId, el: tile, name: tile.dataset.name, onGrip: onGrip,
+      startX: e.clientX, startY: e.clientY, x: e.clientX, y: e.clientY,
+      grabX: 0, grabY: 0, width: 0, height: 0, viewportWidth: window.innerWidth,
+      started: false, ghost: null, slots: null, original: null, raf: null
+    };
+    // 指が枠の外へ出ても、画面の外で離しても、最後まで追いかけられるようにする
+    try { editGrid.setPointerCapture(e.pointerId); } catch(err){}
+    document.addEventListener('pointermove', onSortMove);
+    document.addEventListener('pointerup', onSortEnd);
+    document.addEventListener('pointercancel', onSortPointerCancel);
+  });
+
+  function onSortMove(e){
+    if (!sort || e.pointerId !== sort.pointerId) return;
+    sort.x = e.clientX;
+    sort.y = e.clientY;
+    if (!sort.started) {
+      // 少し動かしてから並べ替えを始める（ボタンを押しただけのときに動き出さないように）
+      if (Math.abs(sort.x - sort.startX) < 5 && Math.abs(sort.y - sort.startY) < 5) return;
+      beginSort();
+    }
+    e.preventDefault();
+    placeGhost();
+    updateSortTarget();
+  }
+
+  function beginSort(){
+    editGrid.classList.remove('is-wiggling');
+    var tiles = shownTiles();
+    tiles.forEach(function(t){ t.style.transition = 'none'; t.style.transform = ''; });
+    var rect = sort.el.getBoundingClientRect();
+    sort.grabX = sort.startX - rect.left;
+    sort.grabY = sort.startY - rect.top;
+    sort.width = rect.width;
+    sort.height = rect.height;
+    sort.original = tiles.map(function(t){ return t.dataset.name; });
+    // 各タイルの置き場所（ページ上の位置）を覚えておく。タイルが入れ替わっても置き場所そのものは動かない。
+    sort.slots = tiles.map(function(t){
+      var r = t.getBoundingClientRect();
+      return {
+        left: r.left + window.pageXOffset, top: r.top + window.pageYOffset,
+        right: r.right + window.pageXOffset, bottom: r.bottom + window.pageYOffset
+      };
+    });
+    var ghost = sort.el.cloneNode(true);
+    ghost.classList.remove('just-moved');
+    ghost.classList.add('etile-ghost');
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.setAttribute('inert', '');
+    ghost.style.width = rect.width + 'px';
+    ghost.style.height = rect.height + 'px';
+    ghost.style.transition = 'none';
+    document.body.appendChild(ghost);
+    sort.ghost = ghost;
+    sort.started = true;
+    sort.el.classList.add('is-placeholder');
+    document.body.classList.add('is-sorting');
+    hideToast();
+    window.addEventListener('scroll', onSortScroll, { passive: true });
+    window.addEventListener('resize', onSortResize);
+    window.addEventListener('blur', cancelSort);
+    document.addEventListener('keydown', onSortKeydown, true);
+    sort.raf = window.requestAnimationFrame(autoScrollStep);
+  }
+
+  function placeGhost(){
+    sort.ghost.style.transform = 'translate(' + (sort.x - sort.grabX) + 'px,' + (sort.y - sort.grabY) + 'px) rotate(1.5deg) scale(1.03)';
+  }
+
+  // つかんでいるタイルの中心がどの置き場所にあるかを見て、空き枠をそこへ動かす
+  function updateSortTarget(){
+    if (!sort || !sort.started) return;
+    var tiles = shownTiles();
+    var slots = sort.slots;
+    var current = tiles.indexOf(sort.el);
+    var last = slots.length - 1;
+    var cx = sort.x - sort.grabX + sort.width / 2 + window.pageXOffset;
+    var cy = sort.y - sort.grabY + sort.height / 2 + window.pageYOffset;
+    var target = -1;
+    slots.forEach(function(s, i){
+      if (cx >= s.left && cx <= s.right && cy >= s.top && cy <= s.bottom) target = i;
+    });
+    if (target < 0) {
+      var lastSlot = slots[last];
+      var gridTop = Math.min.apply(null, slots.map(function(s){ return s.top; }));
+      var gridBottom = Math.max.apply(null, slots.map(function(s){ return s.bottom; }));
+      var gridLeft = Math.min.apply(null, slots.map(function(s){ return s.left; }));
+      var gridRight = Math.max.apply(null, slots.map(function(s){ return s.right; }));
+      if (cy >= lastSlot.top && cx > lastSlot.right) {
+        // 最後の行の空いている所 → いちばん後ろ
+        target = last;
+      } else if (cy < gridTop || cy > gridBottom || cx < gridLeft || cx > gridRight) {
+        // 並びの外まで出たときは、いちばん近い置き場所
+        var best = Infinity;
+        slots.forEach(function(s, i){
+          var dx = Math.max(s.left - cx, 0, cx - s.right);
+          var dy = Math.max(s.top - cy, 0, cy - s.bottom);
+          if (dx * dx + dy * dy < best) { best = dx * dx + dy * dy; target = i; }
+        });
+      } else {
+        // タイルとタイルのすき間では、今の位置のまま（行ったり来たりしないように）
+        return;
+      }
+    }
+    if (target < 0 || target === current) return;
+    var before = captureRects(editGrid);
+    editGrid.insertBefore(sort.el, target > current ? tiles[target].nextSibling : tiles[target]);
+    // 番号を付け直す。つかんでいるタイルの番号も、入る予定の位置に変える
+    shownTiles().forEach(function(t, i){
+      var num = t.querySelector('.etile-num');
+      if (num) num.textContent = String(i + 1);
+    });
+    var ghostNum = sort.ghost.querySelector('.etile-num');
+    if (ghostNum) ghostNum.textContent = String(target + 1);
+    playFlip(editGrid, before);
+  }
+
+  // ドラッグ中に指やマウスが画面の上端・下端に近づいたら、自動でスクロールする
+  function autoScrollStep(){
+    if (!sort || !sort.started) return;
+    var topEdge = Math.max(0, editBar.getBoundingClientRect().bottom) + 40;
+    var bottomEdge = window.innerHeight - 50;
+    var speed = 0;
+    if (sort.y < topEdge) speed = -Math.min(18, Math.ceil((topEdge - sort.y) / 4));
+    else if (sort.y > bottomEdge) speed = Math.min(18, Math.ceil((sort.y - bottomEdge) / 4));
+    if (speed) {
+      var before = window.pageYOffset;
+      window.scrollBy(0, speed);
+      if (window.pageYOffset !== before) updateSortTarget();
+    }
+    sort.raf = window.requestAnimationFrame(autoScrollStep);
+  }
+
+  function onSortScroll(){
+    updateSortTarget();
+  }
+  function onSortResize(){
+    // スマホでアドレスバーが出入りしただけ（高さだけの変化）なら続ける。幅が変わると並びが変わるので取りやめる。
+    if (sort && window.innerWidth !== sort.viewportWidth) cancelSort();
+  }
+  function onSortKeydown(e){
+    if (e.key !== 'Escape' && e.key !== 'Esc') return;
+    e.preventDefault();
+    e.stopPropagation();
+    cancelSort();
+  }
+  function onSortPointerCancel(e){
+    if (sort && e.pointerId === sort.pointerId) cancelSort();
+  }
+
+  function onSortEnd(e){
+    if (!sort || e.pointerId !== sort.pointerId) return;
+    var s = sort;
+    if (!s.started) {
+      stopSortListeners();
+      sort = null;
+      // 動かさずに ⠿ を押しただけのときは、使い方を案内する
+      if (s.onGrip) showToast('「⠿ 移動」をつかんだまま動かすと、並べ替えできます');
+      return;
+    }
+    // ドラッグのあとに続けて来るクリックで、ボタンが押されないようにする
+    suppressClick = true;
+    window.setTimeout(function(){ suppressClick = false; }, 0);
+    var order = shownTiles().map(function(t){ return t.dataset.name; });
+    var changed = order.join('\n') !== s.original.join('\n');
+    if (changed) {
+      saveShownOrder(order);
+      editChanged = true;
+    }
+    finishSort(true, function(){
+      renderEditor();
+      if (changed) {
+        flashTile(editGrid, s.name);
+        announce('「' + s.name + '」を' + (order.indexOf(s.name) + 1) + '番目に移動しました');
+      }
+    });
+  }
+
+  function finishSort(animate, done){
+    var s = sort;
+    stopSortListeners();
+    sort = null;
+    document.body.classList.remove('is-sorting');
+    var ghost = s.ghost;
+    function finish(){
+      if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+      s.el.classList.remove('is-placeholder');
+      settling = false;
+      if (done) done();
+    }
+    if (animate && ghost && !prefersReducedMotion()) {
+      // 手を離した場所（点線の空き枠）へ、すっと収まるように動かす
+      var target = s.el.getBoundingClientRect();
+      settling = true;
+      ghost.style.transition = 'transform .16s ease, box-shadow .16s ease';
+      ghost.style.transform = 'translate(' + target.left + 'px,' + target.top + 'px)';
+      ghost.style.boxShadow = '0 4px 14px rgba(12,49,94,.10)';
+      window.setTimeout(finish, 170);
+    } else {
+      finish();
+    }
+  }
+
+  // 並び順は保存せず、もとの並びに戻す
+  function cancelSort(){
+    if (!sort) return;
+    if (!sort.started) {
+      stopSortListeners();
+      sort = null;
+      return;
+    }
+    finishSort(false, renderEditor);
+  }
+
+  function stopSortListeners(){
+    document.removeEventListener('pointermove', onSortMove);
+    document.removeEventListener('pointerup', onSortEnd);
+    document.removeEventListener('pointercancel', onSortPointerCancel);
+    window.removeEventListener('scroll', onSortScroll);
+    window.removeEventListener('resize', onSortResize);
+    window.removeEventListener('blur', cancelSort);
+    document.removeEventListener('keydown', onSortKeydown, true);
+    if (!sort) return;
+    if (sort.raf) window.cancelAnimationFrame(sort.raf);
+    try {
+      if (editGrid.hasPointerCapture(sort.pointerId)) editGrid.releasePointerCapture(sort.pointerId);
+    } catch(err){}
+  }
+
+  document.addEventListener('click', function(e){
+    if (!suppressClick) return;
+    suppressClick = false;
+    e.preventDefault();
+    e.stopPropagation();
+  }, true);
 
   function showHub(session){
     loginScreen.classList.add('hidden');
     hubScreen.classList.remove('hidden');
     officePill.textContent = session.office;
+    cancelSort();
+    setEditing(false);
     renderTiles();
   }
   function showLogin(){

@@ -145,6 +145,7 @@
   .btn-primary:hover{background:var(--blue-deep);}
   .btn-ghost{border:1px solid var(--field);background:#fff;color:#1f3247;}
   .btn-ghost:hover{border-color:#9fb0c2;color:var(--navy);}
+  .btn-ghost[aria-pressed="true"]{border-color:var(--navy);background:var(--navy);color:#fff;}
   .btn:focus-visible,.link-btn:focus-visible,.tab:focus-visible,.back-link:focus-visible{
     outline:3px solid rgba(37,99,235,.35);outline-offset:2px;}
   .clear-row{display:flex;justify-content:flex-end;}
@@ -274,7 +275,6 @@
 
   /* ---------- 口座記入例（ジャックスの預金口座振替依頼書・印刷専用 A4） ---------- */
   /* 用紙は実物と同じ大きさ・配置（スキャンから測った寸法 mm）で描き、欄を薄い色で塗り分ける */
-  #frame-koza{display:none;}
   .koza{padding:8mm 10mm 7mm;color:#111;font-size:9.5pt;line-height:1.45;
     font-family:"BIZ UDPGothic","BIZ UDPゴシック","Meiryo","メイリオ","Hiragino Sans","Noto Sans JP",sans-serif;}
   .kz-head{display:flex;align-items:flex-end;justify-content:space-between;gap:6mm;padding-bottom:1.6mm;border-bottom:.6mm solid #0c2a4d;}
@@ -557,7 +557,7 @@
       </div>
       <div class="head-actions">
         <button type="button" class="btn btn-ghost" id="print-both-btn" title="1枚目に封筒（送付用・返送用）、2枚目に送付状を続けて印刷します">まとめて印刷</button>
-        <button type="button" class="btn btn-ghost" id="print-koza-btn" title="口座用紙（ジャックスの預金口座振替依頼書）の記入例を、A4 1枚で印刷します">口座記入例</button>
+        <button type="button" class="btn btn-ghost" id="print-koza-btn" aria-pressed="false" aria-controls="panel-koza" title="口座用紙（ジャックスの預金口座振替依頼書）の記入例を表示します。印刷は「記入例を印刷」で行います">口座記入例</button>
         <button type="button" class="btn btn-primary" id="print-btn">送付状を印刷</button>
       </div>
     </div>
@@ -566,6 +566,9 @@
 
       <div id="panel-letter" role="tabpanel" aria-labelledby="tab-letter">
         <p class="status-line" id="fit-status" aria-live="polite"></p>
+      </div>
+      <div id="panel-koza" class="hidden">
+        <p class="status-line">口座用紙（ジャックス）の記入例です。「記入例を印刷」でA4 1枚に印刷できます。</p>
       </div>
       <div id="panel-labels" role="tabpanel" aria-labelledby="tab-labels" class="hidden">
         <div class="label-options">
@@ -614,8 +617,8 @@
         </article>
       </div>
 
-      <div class="sheet-frame" id="frame-koza" aria-hidden="true">
-        <article class="sheet koza" id="koza-sheet">
+      <div class="sheet-frame is-inactive" id="frame-koza">
+        <article class="sheet koza" id="koza-sheet" aria-label="口座記入例のプレビュー">
           <header class="kz-head">
             <div>
               <h1 class="kz-title">口座振替依頼書の書き方</h1>
@@ -674,7 +677,7 @@
               <div class="vl" style="left:0mm;top:91.6mm;width:5.9mm;height:30.8mm;font-size:7pt;letter-spacing:.3em;">口座名義人</div>
               <div class="y holder" style="left:5.9mm;top:91.6mm;width:99.9mm;height:30.8mm;border-right:.25mm solid #333;"><span class="kz-n out" style="left:-11.3mm">7</span><div class="kana"><span>フリガナ</span><span class="hand" style="margin-left:14mm">ヤマダ　タロウ</span></div><span class="hand big">山田　太郎</span></div>
               <div class="y cell stamp" style="left:105.8mm;top:91.6mm;width:22.6mm;height:30.8mm;border:0;"><span class="kz-n">8</span><div class="hd">お届け印</div><span class="seal"><span>山</span><span>田</span></span></div>
-              <div class="frame fb" style="left:-0.8mm;top:61.6mm;width:64.4mm;height:30.8mm;"></div>
+              <div class="frame fb" style="left:-0.8mm;top:61.6mm;width:64.8mm;height:30.8mm;"></div>
               <div class="frame fg" style="left:64mm;top:61.6mm;width:65.2mm;height:30.8mm;"></div>
               <div class="end" style="left:0mm;top:123mm;width:128.4mm;height:3mm;">（この下の「預金口座振替規定」などは記入不要です）</div>
             </div>
@@ -722,7 +725,7 @@
         </div>
       </section>
 
-      <p class="print-tips">印刷のしかた：印刷画面で「用紙サイズ：A4」「倍率：100%（実際のサイズ）」「余白：なし（または既定）」を選びます。PDFで保存する場合は、送信先で「PDFに保存」を選んでください。「まとめて印刷」では、1枚目に封筒、2枚目に送付状を続けて印刷します。「口座記入例」では、口座用紙（ジャックス）の記入例をA4 1枚で印刷します。<span id="label-tips" class="hidden">ラベル用紙に初めて印刷するときは、普通紙に試し印刷し、ラベル用紙と重ねて位置が合うか確かめてください。</span></p>
+      <p class="print-tips">印刷のしかた：印刷画面で「用紙サイズ：A4」「倍率：100%（実際のサイズ）」「余白：なし（または既定）」を選びます。PDFで保存する場合は、送信先で「PDFに保存」を選んでください。「まとめて印刷」では、1枚目に封筒、2枚目に送付状を続けて印刷します。「口座記入例」を押すと口座用紙（ジャックス）の記入例が表示され、「記入例を印刷」でA4 1枚に印刷できます。<span id="label-tips" class="hidden">ラベル用紙に初めて印刷するときは、普通紙に試し印刷し、ラベル用紙と重ねて位置が合うか確かめてください。</span></p>
     </div>
   </section>
 </main>
@@ -868,8 +871,8 @@
   var titleInput = $('title-input'), bodyInput = $('body-input');
   var printBtn = $('print-btn'), printBothBtn = $('print-both-btn'), printKozaBtn = $('print-koza-btn'), printError = $('print-error'), fitStatus = $('fit-status');
   var tabLetter = $('tab-letter'), tabLabels = $('tab-labels');
-  var panelLetter = $('panel-letter'), panelLabels = $('panel-labels');
-  var frameLetter = $('frame-letter'), frameLabels = $('frame-labels');
+  var panelLetter = $('panel-letter'), panelLabels = $('panel-labels'), panelKoza = $('panel-koza');
+  var frameLetter = $('frame-letter'), frameLabels = $('frame-labels'), frameKoza = $('frame-koza');
   var letter = $('letter'), labelsSheet = $('labels-sheet'), previewBody = $('preview-body');
   var layoutSelect = $('layout-select'), suffixSelect = $('suffix-select');
   var guidesCheck = $('guides-check'), zaichuCheck = $('zaichu-check'), fromCheck = $('from-check'), slotCount = $('slot-count');
@@ -1292,8 +1295,8 @@
 
   function updatePrintUI(){
     var isSet = currentLayout().type === 'set';
-    printBtn.textContent = state.tab === 'letter' ? '送付状を印刷' : (isSet ? '封筒を印刷' : 'ラベルを印刷');
-    $('label-tips').classList.toggle('hidden', state.tab === 'letter' || isSet);
+    printBtn.textContent = state.tab === 'letter' ? '送付状を印刷' : state.tab === 'koza' ? '記入例を印刷' : (isSet ? '封筒を印刷' : 'ラベルを印刷');
+    $('label-tips').classList.toggle('hidden', state.tab !== 'labels' || isSet);
     $('paste-mock').classList.toggle('hidden', !(state.tab === 'labels' && isSet));
   }
 
@@ -1367,7 +1370,7 @@
     var avail = previewBody.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
     if (avail === lastAvail) return;
     lastAvail = avail;
-    [frameLetter, frameLabels].forEach(function(frame){
+    [frameLetter, frameLabels, frameKoza].forEach(function(frame){
       var sheet = frame.querySelector('.sheet');
       var w = sheet.offsetWidth, h = sheet.offsetHeight;
       if (!w || avail <= 0) return;
@@ -1392,21 +1395,25 @@
   }
 
   // ---------- タブ ----------
+  // 表示：letter（送付状）・labels（封筒）・koza（口座記入例。「口座記入例」ボタンで切り替え）
   function setTab(tab, focus){
     state.tab = tab;
-    var isLetter = tab === 'letter';
+    var isLetter = tab === 'letter', isLabels = tab === 'labels', isKoza = tab === 'koza';
     tabLetter.setAttribute('aria-selected', String(isLetter));
-    tabLabels.setAttribute('aria-selected', String(!isLetter));
-    tabLetter.tabIndex = isLetter ? 0 : -1;
-    tabLabels.tabIndex = isLetter ? -1 : 0;
+    tabLabels.setAttribute('aria-selected', String(isLabels));
+    tabLetter.tabIndex = isLabels ? -1 : 0;
+    tabLabels.tabIndex = isLabels ? 0 : -1;
+    printKozaBtn.setAttribute('aria-pressed', String(isKoza));
     panelLetter.classList.toggle('hidden', !isLetter);
-    panelLabels.classList.toggle('hidden', isLetter);
+    panelLabels.classList.toggle('hidden', !isLabels);
+    panelKoza.classList.toggle('hidden', !isKoza);
     frameLetter.classList.toggle('is-inactive', !isLetter);
-    frameLabels.classList.toggle('is-inactive', isLetter);
+    frameLabels.classList.toggle('is-inactive', !isLabels);
+    frameKoza.classList.toggle('is-inactive', !isKoza);
     updatePrintUI();
     document.body.setAttribute('data-print', tab);
     hideError();
-    if (focus) (isLetter ? tabLetter : tabLabels).focus();
+    if (focus) (isLabels ? tabLabels : tabLetter).focus();
     fitPreview();
   }
 
@@ -1639,7 +1646,7 @@
   });
   printBtn.addEventListener('click', function(){ doPrint(state.tab); });
   printBothBtn.addEventListener('click', function(){ doPrint('both'); });
-  printKozaBtn.addEventListener('click', function(){ doPrint('koza'); });
+  printKozaBtn.addEventListener('click', function(){ setTab('koza'); });
 
   labelsSheet.addEventListener('click', function(e){
     var slot = e.target.closest('.label-slot');

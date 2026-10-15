@@ -125,7 +125,7 @@
   .notes-box{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);}
   .notes-box h3{margin:0 0 10px;font-size:15px;color:var(--label);}
   .note-opt{display:flex;align-items:flex-start;gap:9px;margin-bottom:8px;font-size:14px;line-height:1.65;cursor:pointer;}
-  .note-opt.is-red span{color:#c0001a;}
+  .note-opt span{color:#c0001a;}
   .note-opt input{width:18px;height:18px;margin:3px 0 0;flex:none;accent-color:var(--blue);}
 
   /* 文面の調整 */
@@ -203,7 +203,8 @@
   .lt-items .empty{color:#9aa5b1;}
   .lt-notes{margin:4mm 0 0 6mm;font-size:calc(11pt * var(--fit));line-height:1.8;}
   .lt-notes p{margin:0;padding-left:1.4em;text-indent:-1.4em;overflow-wrap:anywhere;}
-  .lt-notes p.note-red{color:#d0021b;}
+  /* お客様に注意してほしい部分（※の注意書き・不備の内容）は赤字 */
+  .lt-notes p,.lt-red{color:#d0021b;}
   .lt-end{margin-top:3mm;padding-right:2mm;text-align:right;font-size:calc(11pt * var(--fit));}
   .missing{color:#c0392b;background:#fdecea;border-radius:2px;font-weight:700;}
 
@@ -393,7 +394,7 @@
         <label class="field"><span class="field-label">不備の内容<span class="tag-opt">任意</span></span>
           <input id="fubi-detail-input" type="text" autocomplete="off" placeholder="例）お届け印の相違" />
         </label>
-        <p class="hint">入力すると本文に「一部不備（お届け印の相違）がございました」のように入ります。</p>
+        <p class="hint">入力すると本文に「一部不備（お届け印の相違）がございました」のように入ります（かっこ内は赤字）。</p>
       </div>
     </div>
 
@@ -402,7 +403,7 @@
       <div class="doc-list" id="doc-list"><div class="doc-divider hidden" id="doc-divider" role="separator">ほかの書類（チェックを付けると上に移ります）</div></div>
       <div class="env-hint hidden" id="env-hint">返送用封筒に貼る宛名は、<button type="button" class="link-btn goto-env" id="goto-labels">「封筒」タブ</button>で、お送りする封筒の宛名と上下セットで印刷できます。</div>
       <div class="notes-box">
-        <h3>注意書き（※）</h3>
+        <h3>注意書き（※ 送付状では赤字）</h3>
         <div id="auto-notes"></div>
         <p class="hint" id="auto-notes-empty">選んだ書類に合わせて自動で入ります。不要なものはチェックを外してください。</p>
         <label class="field" style="margin-top:10px"><span class="field-label">追加の注意書き<span class="tag-opt">任意・1行に1つ</span></span>
@@ -923,7 +924,7 @@
     if (sig === lastNotesSig) return;
     lastNotesSig = sig;
     autoNotesBox.innerHTML = notes.map(function(n){
-      return '<label class="note-opt' + (n.key === 'copy' ? ' is-red' : '') + '"><input type="checkbox" data-key="' + escapeHtml(n.key) + '"' +
+      return '<label class="note-opt"><input type="checkbox" data-key="' + escapeHtml(n.key) + '"' +
         (state.excludedNotes[n.key] ? '' : ' checked') + '><span>※ ' + escapeHtml(n.text) + '</span></label>';
     }).join('');
     autoNotesEmpty.textContent = notes.length
@@ -952,7 +953,7 @@
       var html = escapeHtml(line)
         .split('【利用者名】').join(user ? escapeHtml(user) : missingSpan('（利用者名）'))
         .split('【不備書類】').join(fubiDoc ? escapeHtml(fubiDoc) : missingSpan('（不備書類）'))
-        .split('【不備内容】').join(fubiDetail ? '（' + escapeHtml(fubiDetail) + '）' : '');
+        .split('【不備内容】').join(fubiDetail ? '<span class="lt-red">（' + escapeHtml(fubiDetail) + '）</span>' : '');
       return '<p' + (cls ? ' class="' + cls + '"' : '') + '>' + html + '</p>';
     }).join('');
   }
@@ -991,9 +992,9 @@
         }).join('')
       : '<li class="empty">（同封する書類にチェックを付けてください）</li>';
 
-    // お客様控えの注意書き（key: copy）は赤字にする
+    // 注意書き（※）は追加分も含めてすべて赤字（CSS）
     var noteHtml = notes.filter(function(n){ return !state.excludedNotes[n.key]; })
-      .map(function(n){ return '<p' + (n.key === 'copy' ? ' class="note-red"' : '') + '>※　' + escapeHtml(n.text) + '</p>'; })
+      .map(function(n){ return '<p>※　' + escapeHtml(n.text) + '</p>'; })
       .concat(extraNoteLines().map(function(text){ return '<p>※　' + escapeHtml(text) + '</p>'; }));
     $('lt-notes').innerHTML = noteHtml.join('');
 

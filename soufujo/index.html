@@ -158,7 +158,9 @@
   .tab{border:0;background:none;padding:9px 15px;border-radius:8px;color:#2f4258;font-size:15px;font-weight:800;cursor:pointer;}
   .tab[aria-selected="true"]{background:var(--navy);color:#fff;}
   .head-actions{display:flex;flex-wrap:wrap;gap:8px;}
-  .preview-body{flex:1;min-height:0;overflow:auto;padding:14px 16px 20px;}
+  .preview-body{flex:1;min-height:0;overflow:auto;padding:14px 16px 20px;scrollbar-gutter:stable;}
+  /* スクロールバーの分の幅をいつも空けておく（出たり消えたりすると縮小率が変わり、プレビューが震えるため） */
+  @supports not (scrollbar-gutter:stable){ .preview-body{overflow-y:scroll;} }
   .status-line{margin:0 0 10px;font-size:14px;color:#2c3e52;line-height:1.6;}
   .status-line.is-warn{color:#8a5a00;}
   .status-line.is-bad{color:var(--danger);font-weight:800;}

@@ -392,7 +392,6 @@
   .kz-warn{margin:4mm 0 0;padding:0;list-style:none;color:#111;font-size:10pt;line-height:1.65;}
   .kz-warn li{padding-left:3.4mm;text-indent:-3.4mm;}
   .kz-warn li::before{content:'●';display:inline-block;width:3.4mm;text-indent:0;font-size:6.5pt;vertical-align:.4mm;}
-  .kz-foot{margin:4mm 0 0;padding:2mm 3.2mm;border:.35mm solid #9aa5b1;border-radius:2mm;font-size:10pt;line-height:1.55;}
   .save-warning-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
     max-width:min(92vw,440px);padding:10px 14px;border:1px solid var(--danger-line);border-radius:9px;
     color:var(--danger);background:var(--danger-bg);font-size:14px;line-height:1.55;
@@ -715,7 +714,6 @@
             <li>印鑑はお届け印を、かすれ・重なり・はみ出しのないよう押してください。金融機関で受け付けられないことがあります。</li>
             <li>黒のボールペンでご記入ください（消せるボールペンは使えません）。</li>
           </ul>
-          <p class="kz-foot" id="kz-foot"></p>
         </article>
       </div>
       <section class="paste-mock hidden" id="paste-mock" aria-labelledby="paste-mock-title">
@@ -1443,13 +1441,6 @@
     resendFields.classList.toggle('hidden', state.template !== 'resend');
     renderLetter(items, notes);
     renderLabels();
-    renderKoza();
-  }
-
-  // 口座記入例：問い合わせ先は担当者に合わせる
-  function renderKoza(){
-    $('kz-foot').textContent = 'ご不明な点は、' + OFFICE.company + '　' + OFFICE.office + '（TEL ' + OFFICE.tel + '）' +
-      (state.staff ? '営業担当 ' + state.staff + ' ' : '') + 'までお気軽にお問い合わせください。';
   }
 
   // ---------- プレビューの縮小表示 ----------

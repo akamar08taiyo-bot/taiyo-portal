@@ -208,6 +208,7 @@
   .c-sky{background:#0369a1}
   .c-slate{background:#4b5f80}
   .c-ocean{background:#15627c}
+  .c-brown{background:#9a5b2e}
 
   .tile-usage{margin-top:2px;border-top:1px solid var(--line);padding-top:10px;}
   .tile-usage summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;
@@ -399,7 +400,8 @@
     megaphone: '<path d="M3 11v2a2 2 0 0 0 2 2h1l2 6h2l-1-6h2l8 4V7l-8 4H5a2 2 0 0 0-2 2z"/><path d="M17 8a3 3 0 0 1 0 8"/>',
     mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>',
     fax: '<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M7 18v3h10v-3"/><path d="M7 13h5"/><path d="M16.5 13h.5"/>',
-    book: '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/><path d="M8 7h8M8 11h6"/>'
+    book: '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/><path d="M8 7h8M8 11h6"/>',
+    calculator: '<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8.5 6.5h7"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h.01M15.5 18h.01"/>'
   };
   var GRIP_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
     '<circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/>' +
@@ -520,6 +522,15 @@
         '使いたい文の「コピー」を押すと、計画書や記録にそのまま貼り付けられます',
         '「テキストファイルに変換」で作ったファイルをGoogle日本語入力の辞書ツールに取り込むと、よみ（例：てすりせ）で変換できます',
         '文・よみ・分類はクリックしてその場で書き換えられ、単語の追加・削除もできます（使っている端末のブラウザに保存されます）'
+      ] },
+    { name:'仕切り計算・請求書作成', desc:'笹岡工務店用｜メーカーの仕切りから部材を選び、取付手間を数えて、様邸ごとの仕切り計算表と1か月分の請求書を作成・印刷', icon:'calculator', color:'c-brown',
+      url:'sasaoka/index.html', ready:true,
+      usage:[
+        '「部材リスト」でメーカーの仕切り表（Excel・CSV・PDF）を取り込み、よく使う部材に★を付けます',
+        '「＋ 様邸を追加」で○○様邸を作り、玄関・トイレなどの箇所ごとに部材を選び、取付手間（木・タイルなど）の箇所数を ＋／− で数えます',
+        '部材代・取付手間・部材上乗せ・諸経費・消費税・合計は、元の「仕切り計算表」と同じ式で自動計算されます',
+        '「請求書を印刷」で1か月分の御請求書（様邸ごとの内訳と月の合計）を、各様邸の明細と一緒にA4で印刷できます',
+        '入力した内容は使っている端末のブラウザに保存されます（設定画面からバックアップを保存できます）'
       ] }
   ];
 

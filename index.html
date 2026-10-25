@@ -422,7 +422,7 @@
       url:'https://akamar08taiyo-bot.github.io/taiyo-mitsumori/', ready:true,
       usage:[
         '営業所を選ぶと発行元の住所・電話番号が自動で入ります',
-        '商品を検索して数量を入れると金額が自動計算されます',
+        '商品名・数量・単価を入れると、金額・消費税・合計が自動で計算されます',
         '「印刷」からA4の御見積書・価格改定書をそのまま出力できます',
         '「📗 Excel保存」で、御見積書・提案書・価格改定書などを印刷と同じ形の Excel ファイル（.xlsx）でも保存できます（金額は Excel でも計算される式）',
         '過去の見積を複製すると次回の入力が楽になります'
@@ -431,7 +431,7 @@
       url:'https://akamar08taiyo-bot.github.io/taiyo-fukushi-report/', ready:true,
       usage:[
         '撮影した写真を取り込むと自動でリサイズされます',
-        'AIが商品を認識し、報告書のフォームに反映します',
+        'レンタル単位数報告書（PDF・Excel・CSV）を取り込むと、商品名・単位数・利用者名などが報告書に入ります',
         '単位数報告書をPDFでそのまま印刷・提出できます'
       ] },
     { name:'販売受注簿作成ツール', desc:'カタログ画像のスキャン読み取りから受注簿をすばやく作成', icon:'scan', color:'c-indigo',
@@ -450,7 +450,7 @@
         '明細（品目・金額）を入力すると自己負担額が自動計算されます',
         '入力内容を確認のうえ、印刷して発行依頼に使います'
       ] },
-    { name:'消耗品売上管理', desc:'発注書・見積書の集計と分析', icon:'package', color:'c-teal',
+    { name:'消耗品売上管理', desc:'売上データの集計・分析と、発注書・見積書の作成', icon:'package', color:'c-teal',
       url:'https://akamar08taiyo-bot.github.io/taiyo-uriage-bunseki/', ready:true,
       usage:[
         '販売データのCSVを取り込むと施設別・商品別に自動集計します',

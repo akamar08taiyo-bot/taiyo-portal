@@ -31,11 +31,12 @@
   .brand-row strong{display:block;color:var(--navy);font-size:18px;letter-spacing:-.02em;white-space:nowrap;}
   .brand-row span{display:block;margin-top:2px;color:var(--muted);font-size:12.5px;white-space:nowrap;
     overflow:hidden;text-overflow:ellipsis;}
-  .spacer{flex:1;}
-  .back-link{height:38px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:#fff;
-    color:#34485e;font-size:13px;font-weight:800;display:inline-flex;align-items:center;
-    text-decoration:none;white-space:nowrap;flex:none;}
-  .back-link:hover{border-color:#aebdcd;color:var(--navy);}
+  /* 業務アプリポータルへ戻るボタン（太陽ポータルの全アプリ共通。色・大きさ・字はどのアプリでも同じにするため、アプリの書式に負けないよう !important。
+     ユーザーの指示「太陽ポータルに戻るボタンは左上に設置。太陽ポータル全アプリ共通にする。色や大きさも含めて統一する」2026-10-28。決まりは taiyo-portal スキル） */
+  .taiyo-portal-back{display:inline-flex!important;align-items:center!important;gap:4px;box-sizing:border-box!important;height:34px!important;margin:0;padding:0 12px!important;border:1px solid #cbd5e1!important;border-radius:8px!important;background:#fff!important;color:#334155!important;font:500 13px/1 "Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Yu Gothic","Meiryo",sans-serif!important;letter-spacing:0!important;text-decoration:none!important;white-space:nowrap!important;flex:none!important;box-shadow:0 1px 2px rgba(15,23,42,.08)!important}
+  .taiyo-portal-back:hover{background:#f1f5f9!important;color:#0f172a!important}
+  .taiyo-portal-back:focus-visible{outline:2px solid #64748b!important;outline-offset:2px}
+  @media print{.taiyo-portal-back{display:none!important}}
 
   /* ---------- レイアウト ---------- */
   .app{display:grid;grid-template-columns:minmax(340px,470px) minmax(0,1fr);gap:20px;
@@ -146,7 +147,7 @@
   .btn-ghost{border:1px solid var(--field);background:#fff;color:#1f3247;}
   .btn-ghost:hover{border-color:#9fb0c2;color:var(--navy);}
   .btn-ghost[aria-pressed="true"]{border-color:var(--navy);background:var(--navy);color:#fff;}
-  .btn:focus-visible,.link-btn:focus-visible,.tab:focus-visible,.back-link:focus-visible{
+  .btn:focus-visible,.link-btn:focus-visible,.tab:focus-visible{
     outline:3px solid rgba(37,99,235,.35);outline-offset:2px;}
   .clear-row{display:flex;justify-content:flex-end;}
 
@@ -398,9 +399,8 @@
     .preview-body{overflow:visible;padding:12px;}
   }
   @media (max-width:560px){
-    .topbar{padding:0 12px;gap:10px;}
+    .topbar{height:auto;min-height:64px;flex-wrap:wrap;padding:10px 12px;gap:8px 10px;}
     .brand-row strong{font-size:16px;}
-    .back-link{padding:0 10px;font-size:12px;}
     .card{padding:16px 14px 14px;}
     .date-card{padding:12px 14px;}
     .date-row input{flex-basis:150px;min-width:150px;}
@@ -437,12 +437,11 @@
 <body data-print="letter">
 
 <header class="topbar">
+  <a href="https://akamar08taiyo-bot.github.io/taiyo-portal/" class="taiyo-portal-back">← 業務アプリポータルへ戻る</a>
   <div class="brand-row">
     <div class="brand-mark">太</div>
     <div><strong>書類送付状作成</strong><span>太陽シルバーサービス㈱ 行橋営業所</span></div>
   </div>
-  <div class="spacer"></div>
-  <a class="back-link" href="../">ポータルへ戻る</a>
 </header>
 
 <noscript><p style="margin:16px;padding:12px;border:1px solid #f0bcbc;background:#fff3f3;color:#a23a3a">このアプリはJavaScriptを使用します。ブラウザの設定でJavaScriptを有効にしてください。</p></noscript>

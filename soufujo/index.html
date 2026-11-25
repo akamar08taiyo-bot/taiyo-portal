@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="theme-color" content="#0c315e" />
-<title>書類送付状作成｜太陽シルバーサービス 行橋営業所</title>
+<title>書類送付状作成｜太陽シルバーサービス</title>
 <style>
   :root{
     --navy:#0c315e; --blue:#2563eb; --blue-deep:#1d4ed8;
@@ -58,6 +58,7 @@
   .tag-req{margin-left:7px;padding:2px 7px;border-radius:5px;background:#fde8e8;color:#a3170f;font-size:12px;}
   .tag-opt{margin-left:7px;padding:2px 7px;border-radius:5px;background:#e8edf4;color:#34485e;font-size:12px;}
   .hint{margin:0;color:var(--muted);font-size:13.5px;line-height:1.7;font-weight:500;}
+  #office-info{white-space:pre-line;overflow-wrap:anywhere;}
   .date-card{padding:12px 18px;}
   .date-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;}
   .date-title{flex:none;color:var(--navy);font-size:17.5px;font-weight:800;}
@@ -440,7 +441,7 @@
   <a href="https://akamar08taiyo-bot.github.io/taiyo-portal/" class="taiyo-portal-back">← 業務アプリポータルへ戻る</a>
   <div class="brand-row">
     <div class="brand-mark">太</div>
-    <div><strong>書類送付状作成</strong><span>太陽シルバーサービス㈱ 行橋営業所</span></div>
+    <div><strong>書類送付状作成</strong><span id="office-heading">太陽シルバーサービス㈱</span></div>
   </div>
 </header>
 
@@ -449,6 +450,14 @@
 <main class="app">
   <!-- ===================== 入力 ===================== -->
   <section class="form-col" aria-label="入力">
+    <div class="card">
+      <h2>発行元の営業所</h2>
+      <label class="field"><span class="field-label">営業所</span>
+        <select id="office-select" aria-describedby="office-info"></select>
+      </label>
+      <p class="hint" id="office-info" aria-live="polite"></p>
+      <p class="hint">選んだ営業所の情報が送付状・封筒・返送用ラベルに反映されます。次回からはこの端末で自動的に選ばれます。</p>
+    </div>
     <div class="card date-card">
       <div class="date-row">
         <span class="date-title" aria-hidden="true">日付</span>
@@ -462,10 +471,13 @@
 
     <div class="card">
       <h2><span class="step">1</span>担当者（あなた）</h2>
-      <p class="callout hidden" id="staff-callout">まず、自分の名前をリストから選んでください。次回からはこの端末で自動的に選ばれます。</p>
+      <p class="callout hidden" id="staff-callout">担当者名を入力してください。次回からはこの営業所の担当者として自動的に入力されます。</p>
       <fieldset class="staff-group" id="staff-group">
         <legend class="sr-only">担当者を選択</legend>
       </fieldset>
+      <label class="field"><span class="field-label">担当者名<span class="tag-req">必須</span></span>
+        <input id="staff-name-input" type="text" autocomplete="off" placeholder="例）山田 太郎" />
+      </label>
       <label class="field"><span class="field-label">携帯番号<span class="tag-opt">任意</span></span>
         <input id="mobile-input" type="tel" inputmode="tel" autocomplete="off" placeholder="例）080-0000-0000" />
       </label>
@@ -731,18 +743,32 @@
   var KEY_STAFF = 'taiyo_soufujo_staff';
   var KEY_MOBILES = 'taiyo_soufujo_mobiles';
   var KEY_PREFS = 'taiyo_soufujo_prefs';
+  var KEY_OFFICE = 'taiyo_soufujo_office';
 
-  // 発行元（差出人欄・返送用ラベル）の固定情報
-  var OFFICE = {
-    company: '太陽シルバーサービス株式会社',
-    companyShort: '太陽シルバーサービス（株）',
-    office: '行橋営業所',
-    zip: '824-0043',
-    address: '福岡県行橋市大字流末1327番地',
-    manager: '久保　匠史',
-    tel: '0930-26-9640',
-    fax: '0930-26-9641'
-  };
+  // 全19営業所。価格改定・休暇案内アプリの登録情報を使用（2026-11-26）。
+  // https://github.com/akamar08taiyo-bot/taiyo-kakaku-kyuka/blob/main/index.html の OFFICES
+  var OFFICES = [
+    {"office":"小倉営業所","zip":"802-0011","address":"福岡県北九州市小倉北区重住3丁目11-21","manager":"森口 賢一","tel":"093-952-1616","fax":"093-952-1627"},
+    {"office":"小倉南営業所","zip":"800-0226","address":"福岡県北九州市小倉南区田原新町1丁目3-34","manager":"串山 清彦","tel":"093-474-5670","fax":"093-474-5671"},
+    {"office":"八幡西営業所","zip":"807-0815","address":"福岡県北九州市八幡西区本城東2丁目4-8","manager":"福本 浩史","tel":"093-603-3512","fax":"093-601-3593"},
+    {"office":"八幡東営業所","zip":"805-0033","address":"福岡県北九州市八幡東区山路松尾町14-6","manager":"兼重 陽介","tel":"093-654-8515","fax":"093-654-8516"},
+    {"office":"行橋営業所","zip":"824-0043","address":"福岡県行橋市大字流末1327番地","manager":"久保 匠史","tel":"0930-26-9640","fax":"0930-26-9641"},
+    {"office":"田川営業所","zip":"826-0042","address":"福岡県田川市大字川宮1200番地","manager":"早崎 勝","tel":"0947-44-1895","fax":"0947-44-2372"},
+    {"office":"飯塚営業所","zip":"820-0081","address":"福岡県飯塚市枝国510番地7","manager":"佐藤 正仁","tel":"0948-52-6360","fax":"0948-52-6362"},
+    {"office":"福岡南営業所","zip":"816-0912","address":"福岡県大野城市御笠川2丁目10-15","manager":"瀧本 順一","tel":"092-504-9810","fax":"092-504-9811"},
+    {"office":"福岡西営業所","zip":"814-0032","address":"福岡県福岡市早良区小田部4丁目11-31","manager":"佐藤 正和","tel":"092-833-0131","fax":"092-833-0132"},
+    {"office":"福岡東営業所","zip":"812-0064","address":"福岡県福岡市東区松田3丁目25-2","manager":"岡本 将臣","tel":"092-627-1150","fax":"092-627-1151"},
+    {"office":"久留米営業所","zip":"838-0141","address":"福岡県小郡市小郡97番地19　オフィスパレア小郡Ⅰ（2号室＋3号室）","manager":"牟田 知広","tel":"0942-72-8822","fax":"0942-72-8833"},
+    {"office":"大牟田営業所","zip":"837-0924","address":"福岡県大牟田市大字歴木446-1","manager":"橋本 浩志","tel":"0944-59-1488","fax":"0944-59-1481"},
+    {"office":"佐賀営業所","zip":"849-0937","address":"佐賀県佐賀市鍋島5丁目4-15","manager":"江原 諒","tel":"0952-34-1224","fax":"0952-34-1225"},
+    {"office":"長崎営業所","zip":"851-0122","address":"長崎県長崎市界2丁目2番4号","manager":"吉本 幸治","tel":"095-834-0535","fax":"095-834-0536"},
+    {"office":"大村営業所","zip":"856-0844","address":"長崎県大村市溝陸町643-1","manager":"中富 一貴","tel":"0957-49-6222","fax":"0957-49-6333"},
+    {"office":"壱岐営業所","zip":"811-5117","address":"長崎県壱岐市郷ノ浦町田中触1078","manager":"長岡 計治","tel":"0920-47-9005","fax":"0920-47-9006"},
+    {"office":"熊本営業所","zip":"862-0945","address":"熊本県熊本市東区画図町大字下無田1432-22","manager":"城戸 健","tel":"096-377-7630","fax":"096-377-7631"},
+    {"office":"熊本北営業所","zip":"861-5517","address":"熊本県熊本市北区鶴羽田1丁目10番7号","manager":"髙木 伸基","tel":"096-341-5765","fax":"096-341-5766"},
+    {"office":"大分営業所","zip":"870-0953","address":"大分県大分市下郡東1-4-35","manager":"山下 厚","tel":"097-504-8001","fax":"097-504-8002"}
+  ];
+  var OFFICE;
   var STAFF = ['久保', '土居', '宮村', '信田', '藤田'];
 
   // 同封書類の候補。ret: 返送してもらう書類か / debit: 口座振替関係の書類か / defaultCopies: チェックしたときの最初の部数
@@ -849,10 +875,11 @@
     letterOverflow: false,
     prefs: { era:'seireki', layout:'set', suffix:'宛', guides:true, zaichu:false, from:false }
   };
-  var mobiles = {};
+  var mobiles = Object.create(null);
   var memory = {};
 
   function $(id){ return document.getElementById(id); }
+  var officeSelect = $('office-select'), officeInfo = $('office-info'), staffNameInput = $('staff-name-input');
   var staffGroup = $('staff-group'), staffCallout = $('staff-callout');
   var mobileInput = $('mobile-input'), mobileHint = $('mobile-hint');
   var userInput = $('user-input'), addresseeInput = $('addressee-input');
@@ -955,7 +982,21 @@
   }
 
   // ---------- 画面の組み立て ----------
+  function findOffice(name){
+    return OFFICES.filter(function(office){ return office.office === name; })[0];
+  }
+  function buildOffices(){
+    OFFICES.forEach(function(office){
+      var option = document.createElement('option');
+      option.value = option.textContent = office.office;
+      officeSelect.appendChild(option);
+    });
+  }
   function buildStaff(){
+    Array.prototype.forEach.call(staffGroup.querySelectorAll('.chip'), function(el){ el.remove(); });
+    // 既存の行橋営業所の候補を維持。他営業所の担当者は名前を入力する。
+    staffGroup.classList.toggle('hidden', OFFICE.office !== '行橋営業所');
+    if (OFFICE.office !== '行橋営業所') return;
     STAFF.forEach(function(name){
       var label = document.createElement('label');
       label.className = 'chip';
@@ -1422,18 +1463,51 @@
   }
 
   // ---------- 担当者 ----------
+  function officeKey(key){
+    // 行橋営業所では既存の保存キーを使い、保存済みの担当者・携帯番号を引き継ぐ。
+    return OFFICE.office === '行橋営業所' ? key : key + '_' + OFFICE.office;
+  }
+  function setOffice(name, persist){
+    var office = findOffice(name) || findOffice('行橋営業所');
+    OFFICE = Object.assign({
+      company: '太陽シルバーサービス株式会社',
+      companyShort: '太陽シルバーサービス（株）'
+    }, office);
+    officeSelect.value = OFFICE.office;
+    $('office-heading').textContent = '太陽シルバーサービス㈱ ' + OFFICE.office;
+    document.title = '書類送付状作成｜太陽シルバーサービス ' + OFFICE.office;
+    officeInfo.textContent = '〒' + OFFICE.zip + '　' + OFFICE.address + '\n' +
+      'TEL ' + OFFICE.tel + '　FAX ' + OFFICE.fax + '\n営業所長　' + OFFICE.manager;
+    if (persist) save(KEY_OFFICE, OFFICE.office);
+    mobiles = Object.create(null);
+    var savedMobiles = load(officeKey(KEY_MOBILES));
+    if (savedMobiles && typeof savedMobiles === 'object' && !Array.isArray(savedMobiles)) {
+      Object.keys(savedMobiles).forEach(function(staff){
+        if (typeof savedMobiles[staff] === 'string') mobiles[staff] = savedMobiles[staff];
+      });
+    }
+    buildStaff();
+    hideError();
+    staffNameInput.value = '';
+    setStaff(load(officeKey(KEY_STAFF)), false);
+  }
   function setStaff(name, persist){
-    state.staff = STAFF.indexOf(name) >= 0 ? name : '';
+    state.staff = typeof name === 'string' ? cleanText(name) : '';
+    if (document.activeElement !== staffNameInput) staffNameInput.value = state.staff;
     Array.prototype.forEach.call(staffGroup.querySelectorAll('input'), function(r){ r.checked = r.value === state.staff; });
+    staffCallout.textContent = OFFICE.office === '行橋営業所'
+      ? 'まず、自分の名前を選ぶか入力してください。次回からはこの端末で自動的に選ばれます。'
+      : '担当者名を入力してください。次回からはこの営業所の担当者として自動的に入力されます。';
     staffCallout.classList.toggle('hidden', !!state.staff);
     staffGroup.classList.remove('is-invalid');
     mobileInput.disabled = !state.staff;
     mobileInput.value = state.staff ? (mobiles[state.staff] || '') : '';
-    mobileInput.placeholder = state.staff ? '例）080-0000-0000' : '先に担当者を選んでください';
+    mobileInput.placeholder = state.staff ? '例）080-0000-0000' : '先に担当者名を入力してください';
     mobileHint.textContent = state.staff
       ? '「' + state.staff + '」さんの携帯番号として、この端末に保存されます。空欄なら送付状に載りません。'
       : '携帯番号は担当者ごとにこの端末へ保存され、送付状の差出人欄に載ります。空欄なら載りません。';
-    if (persist) save(KEY_STAFF, state.staff);
+    staffNameInput.removeAttribute('aria-invalid');
+    if (persist) save(officeKey(KEY_STAFF), state.staff);
     renderAll();
   }
 
@@ -1458,7 +1532,7 @@
   }
   function letterProblems(){
     var problems = [];
-    if (!state.staff) { problems.push({ text:'担当者（あなた）を選んでください', el:staffGroup }); staffGroup.classList.add('is-invalid'); }
+    if (!state.staff) { problems.push({ text:'担当者名を入力してください', el:staffNameInput }); staffNameInput.setAttribute('aria-invalid', 'true'); }
     if (!personName(userInput.value)) { problems.push({ text:'ご利用者名を入力してください', el:userInput }); userInput.setAttribute('aria-invalid', 'true'); }
     if (bodyInput.value.indexOf('【不備書類】') >= 0 && !cleanText(fubiDocInput.value)) {
       problems.push({ text:'不備があった書類を入力してください', el:fubiDocInput });
@@ -1469,7 +1543,7 @@
   function envelopeProblems(){
     var problems = [];
     var L = currentLayout();
-    if (!state.staff) { problems.push({ text:'担当者（あなた）を選んでください', el:staffGroup }); staffGroup.classList.add('is-invalid'); }
+    if (!state.staff) { problems.push({ text:'担当者名を入力してください', el:staffNameInput }); staffNameInput.setAttribute('aria-invalid', 'true'); }
     if (L.type === 'set') {
       if (!recipientName()) { problems.push({ text:'ご利用者名（または宛名）を入力してください', el:userInput }); userInput.setAttribute('aria-invalid', 'true'); }
       if (!cleanText(addr1Input.value)) { problems.push({ text:'封筒（送付用）の住所を入力してください', el:addr1Input }); addr1Input.setAttribute('aria-invalid', 'true'); }
@@ -1523,13 +1597,15 @@
   }
 
   // ---------- イベント ----------
+  officeSelect.addEventListener('change', function(){ setOffice(officeSelect.value, true); });
+  staffNameInput.addEventListener('input', function(){ setStaff(staffNameInput.value, true); });
   staffGroup.addEventListener('change', function(e){
     if (e.target.name === 'staff') setStaff(e.target.value, true);
   });
   mobileInput.addEventListener('input', function(){
     if (!state.staff) return;
     mobiles[state.staff] = mobileInput.value.trim();
-    save(KEY_MOBILES, mobiles);
+    save(officeKey(KEY_MOBILES), mobiles);
     renderAll();
   });
   [userInput, addresseeInput, zipInput, addr1Input, addr2Input, fubiDocInput, fubiDetailInput, extraNotes, titleInput, bodyInput].forEach(function(el){
@@ -1681,7 +1757,7 @@
   else window.addEventListener('resize', fitPreview);
 
   // ---------- 起動 ----------
-  buildStaff();
+  buildOffices();
   buildTemplates();
   buildDocs();
   buildLayouts();
@@ -1702,15 +1778,13 @@
   zaichuCheck.checked = state.prefs.zaichu;
   fromCheck.checked = state.prefs.from;
 
-  var savedMobiles = load(KEY_MOBILES);
-  if (savedMobiles && typeof savedMobiles === 'object') {
-    STAFF.forEach(function(name){ if (typeof savedMobiles[name] === 'string') mobiles[name] = savedMobiles[name]; });
-  }
-
   dateInput.value = todayValue();
   fubiDocInput.value = DEFAULT_FUBI_DOC;
+  var savedOffice = load(KEY_OFFICE);
+  var portalSession = load('taiyo_portal_session');
+  var initialOffice = findOffice(savedOffice) ? savedOffice : (portalSession && portalSession.office);
+  setOffice(initialOffice, false);
   applyTemplate('contract', true);
-  setStaff(load(KEY_STAFF), false);
   setTab('letter');
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ fitLetter(); fitPreview(); });
 })();

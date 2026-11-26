@@ -1782,7 +1782,8 @@
   fubiDocInput.value = DEFAULT_FUBI_DOC;
   var savedOffice = load(KEY_OFFICE);
   var portalSession = load('taiyo_portal_session');
-  var initialOffice = findOffice(savedOffice) ? savedOffice : (portalSession && portalSession.office);
+  var portalOffice = portalSession && portalSession.office;
+  var initialOffice = findOffice(portalOffice) ? portalOffice : savedOffice;
   setOffice(initialOffice, false);
   applyTemplate('contract', true);
   setTab('letter');

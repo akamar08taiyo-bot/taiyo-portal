@@ -1225,6 +1225,7 @@
       '<div>' + escapeHtml(OFFICE.office) + '</div>',
       '<div>〒' + escapeHtml(OFFICE.zip) + '</div>',
       '<div>' + escapeHtml(OFFICE.address) + '</div>',
+      '<div>営業所長　' + escapeHtml(OFFICE.manager) + '</div>',
       '<div>担当　' + (state.staff ? escapeHtml(state.staff) : missingSpan('（担当者）')) + '</div>',
       '<div>TEL　' + escapeHtml(OFFICE.tel) + '</div>',
       '<div>FAX　' + escapeHtml(OFFICE.fax) + '</div>'
@@ -1476,7 +1477,7 @@
     $('office-heading').textContent = '太陽シルバーサービス㈱ ' + OFFICE.office;
     document.title = '書類送付状作成｜太陽シルバーサービス ' + OFFICE.office;
     officeInfo.textContent = '〒' + OFFICE.zip + '　' + OFFICE.address + '\n' +
-      'TEL ' + OFFICE.tel + '　FAX ' + OFFICE.fax;
+      'TEL ' + OFFICE.tel + '　FAX ' + OFFICE.fax + '\n営業所長　' + OFFICE.manager;
     if (persist) save(KEY_OFFICE, OFFICE.office);
     mobiles = Object.create(null);
     var savedMobiles = load(officeKey(KEY_MOBILES));
